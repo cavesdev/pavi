@@ -1,4 +1,4 @@
-from detector import YOLODetector
+from detectors.detector import YOLODetector
 import cv2 as cv
 import numpy as np
 import os
