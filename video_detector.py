@@ -12,10 +12,10 @@ class YOLOVideoDetector(YOLODetector):
         super().__init__()
 
         self.fps = 30
-        self.interval = 30
+        self.interval = 1
         self.__vid_writer = None
-        self.filename = None
-        self.json = {}
+        self.__filename = None
+        self.__json = {}
 
     def load_file(self, filename):
         if not os.path.isfile(filename):
@@ -24,13 +24,13 @@ class YOLOVideoDetector(YOLODetector):
         self.__cap = cv.VideoCapture(filename)
         self.__output_file = filename[:-4] + '_yolo_out_py.avi'
         # self.fps = cv.CAP_PROP_FPS
-        self.filename = filename
+        self.__filename = filename
 
         # Get the video writer initialized to save the output video
         self.__vid_writer = cv.VideoWriter(self.__output_file, cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), self.fps,
                                            (round(self.__cap.get(cv.CAP_PROP_FRAME_WIDTH)),
                                             round(self.__cap.get(cv.CAP_PROP_FRAME_HEIGHT))))
-        self.initialize_json()
+        self.__initialize_json()
 
     def process(self):
         window_name = 'Deep learning object detection in OpenCV'
@@ -55,33 +55,35 @@ class YOLOVideoDetector(YOLODetector):
             if current_frame % self.interval:
                 continue
 
-            super().process(frame)
+            super()._process(frame)
 
             self.__vid_writer.write(frame.astype(np.uint8))
-            self.write_to_json(current_frame)
+            self.__update_json(current_frame)
             cv.imshow(window_name, frame)
 
         self.__cap.release()
         cv.destroyAllWindows()
 
-    def write_to_json(self, current_frame):
-        frame_json = super().get_json()
+    def __update_json(self, current_frame):
+        frame_json = super()._get_json()
         seconds = current_frame / self.fps
 
         data = dict(frame=current_frame, seconds=seconds,objects=frame_json['detections'])
 
-        self.json.get('processing')[0].get('detections').append(data)
+        self.__json.get('processing')[0].get('detections').append(data)
 
-        print(json.dumps(self.json, sort_keys=True, indent=2))
-
-    def initialize_json(self):
+    def __initialize_json(self):
         video_date = 1
         processed_date = datetime.now().__str__()
-        name, extension = os.path.splitext(self.filename)
+        name, extension = os.path.splitext(self.__filename)
         tags = None
         duration = cv.CAP_PROP_FRAME_COUNT
 
         algorithm = dict(algorithm='YOLOv3', processed_date=processed_date, detections=[])
         video_metadata = dict(filename=name, capture_date=video_date, tags=tags, duration=duration, FPS=self.fps,
                               format=extension, processing=[algorithm])
-        self.json = video_metadata
+        self.__json = video_metadata
+
+    def write_json(self, filename):
+        with open(filename, 'w') as output:
+            json.dump(self.__json, output, sort_keys=True, indent=2)

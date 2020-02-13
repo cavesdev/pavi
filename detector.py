@@ -2,6 +2,7 @@ import cv2 as cv
 import numpy as np
 import os.path
 
+
 class YOLODetector:
 
     def __init__(
@@ -29,16 +30,16 @@ class YOLODetector:
         self.__classes = None
         self.__cap = None
         self.__output_file = '_yolo_out_py'  # TODO
-        self.frame_json = {'detections': {}}
+        self.__frame_json = {'detections': {}}
 
-        self.load_classes()
+        self.__load_classes()
 
-    def load_classes(self):
+    def __load_classes(self):
         with open(self.__model_classes, 'rt') as f:
             self.__classes = f.read().rstrip('\n').split('\n')
 
-    def process(self, frame):
-        self.frame_json = {'detections': {}}
+    def _process(self, frame):
+        self.__frame_json = {'detections': {}}
 
         # Create a 4D blob from a frame.
         blob = cv.dnn.blobFromImage(frame, 1 / 255, (self.input_width, self.input_height), [0, 0, 0], 1, crop=False)
@@ -47,22 +48,22 @@ class YOLODetector:
         self.__net.setInput(blob)
 
         # Runs the forward pass to get output of the output layers
-        outs = self.__net.forward(self.get_output_names(self.__net))
+        outs = self.__net.forward(self.__get_output_names(self.__net))
 
         # Remove the bounding boxes with low confidence
-        self.postprocess(frame, outs)
+        self.__postprocess(frame, outs)
 
-        self.add_inference_time(frame)
+        self.__add_inference_time(frame)
 
     # Get the names of the output layers
-    def get_output_names(self, net):
+    def __get_output_names(self, net):
         # Get the names of all the layers in the network
         layer_names = self.__net.getLayerNames()
         # Get the names of the output layers, i.e. the layers with unconnected outputs
         return [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 
     # Remove the bounding boxes with low confidence using non-maxima suppression
-    def postprocess(self, frame, outs):
+    def __postprocess(self, frame, outs):
         frame_height = frame.shape[0]
         frame_width = frame.shape[1]
 
@@ -97,22 +98,22 @@ class YOLODetector:
             top = box[1]
             width = box[2]
             height = box[3]
-            self.add_to_json(class_ids[i])
-            self.draw_pred(frame, class_ids[i], confidences[i], left, top, left + width, top + height)
+            self.__add_to_json(class_ids[i])
+            self.__draw_pred(frame, class_ids[i], confidences[i], left, top, left + width, top + height)
 
-    def add_to_json(self, class_id):
+    def __add_to_json(self, class_id):
         class_name = self.__classes[class_id]
 
-        class_exists = self.frame_json.get('detections').get(class_name)
+        class_exists = self.__frame_json.get('detections').get(class_name)
 
         if class_exists is None:
             new_class = {class_name: 1}
-            self.frame_json.get('detections').update(new_class)
+            self.__frame_json.get('detections').update(new_class)
         else:
-            self.frame_json['detections'][class_name] += 1
+            self.__frame_json['detections'][class_name] += 1
 
     # Draw the predicted bounding box
-    def draw_pred(self, frame, class_id, conf, left, top, right, bottom):
+    def __draw_pred(self, frame, class_id, conf, left, top, right, bottom):
         # Draw a bounding box.
         cv.rectangle(frame, (left, top), (right, bottom), (255, 178, 50), 3)
 
@@ -130,15 +131,15 @@ class YOLODetector:
                      (left + round(1.5 * label_size[0]), top + base_line), (255, 255, 255), cv.FILLED)
         cv.putText(frame, label, (left, top), cv.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 0), 1)
 
-    def add_inference_time(self, frame):
+    def __add_inference_time(self, frame):
         # Put efficiency information. The function getPerfProfile returns the overall time for inference(t) and the
         # timings for each of the layers(in layersTimes)
         t, _ = self.__net.getPerfProfile()
         label = 'Inference time: %.2f ms' % (t * 1000.0 / cv.getTickFrequency())
         cv.putText(frame, label, (0, 15), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255))
 
-    def get_json(self):
-        return self.frame_json
+    def _get_json(self):
+        return self.__frame_json
 
 
 
