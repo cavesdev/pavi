@@ -2,7 +2,6 @@ import cv2 as cv
 import numpy as np
 import os.path
 
-
 class YOLODetector:
 
     def __init__(
@@ -23,13 +22,14 @@ class YOLODetector:
         self.__model_weights = os.path.join(helpers_path, 'yolov3.weights')
         self.__model_classes = os.path.join(helpers_path, 'coco.names')
 
-        self.__net = cv.dnn.readNetFromDarknet(self.__model_cfg, self.__model_weights)  # TODO
+        self.__net = cv.dnn.readNetFromDarknet(self.__model_cfg, self.__model_weights)
         self.__net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
         self.__net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
 
         self.__classes = None
         self.__cap = None
         self.__output_file = '_yolo_out_py'  # TODO
+        self.frame_json = {'detections': {}}
 
         self.load_classes()
 
@@ -38,6 +38,8 @@ class YOLODetector:
             self.__classes = f.read().rstrip('\n').split('\n')
 
     def process(self, frame):
+        self.frame_json = {'detections': {}}
+
         # Create a 4D blob from a frame.
         blob = cv.dnn.blobFromImage(frame, 1 / 255, (self.input_width, self.input_height), [0, 0, 0], 1, crop=False)
 
@@ -95,7 +97,19 @@ class YOLODetector:
             top = box[1]
             width = box[2]
             height = box[3]
+            self.add_to_json(class_ids[i])
             self.draw_pred(frame, class_ids[i], confidences[i], left, top, left + width, top + height)
+
+    def add_to_json(self, class_id):
+        class_name = self.__classes[class_id]
+
+        class_exists = self.frame_json.get('detections').get(class_name)
+
+        if class_exists is None:
+            new_class = {class_name: 1}
+            self.frame_json.get('detections').update(new_class)
+        else:
+            self.frame_json['detections'][class_name] += 1
 
     # Draw the predicted bounding box
     def draw_pred(self, frame, class_id, conf, left, top, right, bottom):
@@ -122,4 +136,9 @@ class YOLODetector:
         t, _ = self.__net.getPerfProfile()
         label = 'Inference time: %.2f ms' % (t * 1000.0 / cv.getTickFrequency())
         cv.putText(frame, label, (0, 15), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255))
+
+    def get_json(self):
+        return self.frame_json
+
+
 
