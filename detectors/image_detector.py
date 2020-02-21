@@ -1,13 +1,15 @@
-from detectors.detector import YOLODetector
+from .detector import YOLOFrameDetector
 import cv2 as cv
 import numpy as np
 import os
 import sys
 
 
-class YOLOImageDetector(YOLODetector):
+class ImageDetector:
     def __init__(self):
-        super().__init__()
+        self.__detector = YOLOFrameDetector()
+        self.__cap = None
+        self.__output_file = None
 
     def load_file(self, filename):
         if not os.path.isfile(filename):
@@ -19,7 +21,7 @@ class YOLOImageDetector(YOLODetector):
     def process(self):
         _, frame = self.__cap.read()
 
-        super().process(frame)
+        self.__detector.process(frame)
 
         cv.imwrite(self.__output_file, frame.astype(np.uint8))
         window_name = 'Deep learning object detection in OpenCV'

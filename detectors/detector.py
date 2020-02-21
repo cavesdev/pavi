@@ -1,71 +1,91 @@
+"""
+Object detection in a single frame using YOLOv3 algorithm
+Class YOLOFrameDetector processes a given frame and draws bounding boxes with detected class name and confidence.
+If requested, return a JSON object with the number of detections per detected class.
+
+Author: Carlos Cuevas
+@cavesdev
+February 2020
+"""
+
 import cv2 as cv
 import numpy as np
-import os.path
 
 
-class YOLODetector:
+class YOLOFrameDetector:
+    """Class to detect objects in a given frame using YOLOv3 algorithm"""
 
-    def __init__(
-            self,
-            confidence_threshold=0.5,
-            nms_threshold=0.4,
-            input_width=416,
-            input_height=416,
-            helpers_path='helpers'
-    ):
-        self.confidence_threshold = confidence_threshold  # Confidence threshold
-        self.nms_threshold = nms_threshold  # Non-maximum suppression threshold
-        self.input_width = input_width  # Width of network's input image
-        self.input_height = input_height  # Height of network's input image
+    def __init__(self, config):
+        """
+        Set the necessary variables.
+        :param config: is a Config object. (from _config import Config)
+        """
+        self.confidence_threshold = config.get('confidence_threshold')  # Confidence threshold
+        self.nms_threshold = config.get('nms_threshold')  # Non-maximum suppression threshold
+        self.input_width = config.get('input_width')  # Width of network's input image
+        self.input_height = config.get('input_height')  # Height of network's input image
 
-        # TODO set better way to deal with these files
-        self.__model_cfg = os.path.join(helpers_path, 'yolov3.cfg')
-        self.__model_weights = os.path.join(helpers_path, 'yolov3.weights')
-        self.__model_classes = os.path.join(helpers_path, 'coco.names')
+        self.net = cv.dnn.readNetFromDarknet(config.get('model_cfg'), config.get('model_weights'))
+        self.net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
+        self.net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
 
-        self.__net = cv.dnn.readNetFromDarknet(self.__model_cfg, self.__model_weights)
-        self.__net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
-        self.__net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
+        self.classes = None
+        self.frame = None
+        self.frame_json = {'detections': {}}
 
-        self.__classes = None
-        self.__cap = None
-        self.__output_file = '_yolo_out_py'  # TODO
-        self.__frame_json = {'detections': {}}
+        self.__load_classes(config.get('model_classes'))
 
-        self.__load_classes()
+    def __load_classes(self, model_classes):
+        """
+        Load class names from file
+        :param model_classes: file with class names to load.
+        :return:
+        """
+        with open(model_classes, 'r') as f:
+            self.classes = [line.strip() for line in f.readlines()]
 
-    def __load_classes(self):
-        with open(self.__model_classes, 'rt') as f:
-            self.__classes = f.read().rstrip('\n').split('\n')
-
-    def _process(self, frame):
-        self.__frame_json = {'detections': {}}
+    def process(self, frame):
+        """
+        Main function to process the given frame
+        :param frame: a frame object for detection
+        :return: None
+        """
+        self.frame_json = {'detections': {}}
+        self.frame = frame
 
         # Create a 4D blob from a frame.
         blob = cv.dnn.blobFromImage(frame, 1 / 255, (self.input_width, self.input_height), [0, 0, 0], 1, crop=False)
 
         # Sets the input to the network
-        self.__net.setInput(blob)
+        self.net.setInput(blob)
 
         # Runs the forward pass to get output of the output layers
-        outs = self.__net.forward(self.__get_output_names(self.__net))
+        outs = self.net.forward(self.__get_output_names())
 
         # Remove the bounding boxes with low confidence
-        self.__postprocess(frame, outs)
+        self.__postprocess(outs)
 
-        self.__add_inference_time(frame)
+        # Add inference time to frame
+        self.__add_inference_time()
 
-    # Get the names of the output layers
-    def __get_output_names(self, net):
+    def __get_output_names(self):
+        """
+        Get the names of the output layers
+        :return: names of output layers
+        """
         # Get the names of all the layers in the network
-        layer_names = self.__net.getLayerNames()
+        layer_names = self.net.getLayerNames()
         # Get the names of the output layers, i.e. the layers with unconnected outputs
-        return [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
+        return [layer_names[i[0] - 1] for i in self.net.getUnconnectedOutLayers()]
 
-    # Remove the bounding boxes with low confidence using non-maxima suppression
-    def __postprocess(self, frame, outs):
-        frame_height = frame.shape[0]
-        frame_width = frame.shape[1]
+    def __postprocess(self, outs):
+        """
+        Remove the bounding boxes with low confidence using non-maxima suppression
+        :param frame: the frame that is being processed
+        :param outs: names of output layers
+        """
+        frame_height = self.frame.shape[0]
+        frame_width = self.frame.shape[1]
 
         # Scan through all the bounding boxes output from the network and keep only the
         # ones with high confidence scores. Assign the box's class label as the class with the highest score.
@@ -99,47 +119,65 @@ class YOLODetector:
             width = box[2]
             height = box[3]
             self.__add_to_json(class_ids[i])
-            self.__draw_pred(frame, class_ids[i], confidences[i], left, top, left + width, top + height)
+            self.__draw_pred(class_ids[i], confidences[i], left, top, left + width, top + height)
 
     def __add_to_json(self, class_id):
-        class_name = self.__classes[class_id]
-
-        class_exists = self.__frame_json.get('detections').get(class_name)
+        """
+        Add the detected class to JSON
+        If the class is already on JSON, add one to the counter.
+        :param class_id: id of the detected object's class
+        """
+        class_name = self.classes[class_id]
+        class_exists = self.frame_json.get('detections').get(class_name)
 
         if class_exists is None:
             new_class = {class_name: 1}
-            self.__frame_json.get('detections').update(new_class)
+            self.frame_json.get('detections').update(new_class)
         else:
-            self.__frame_json['detections'][class_name] += 1
+            self.frame_json['detections'][class_name] += 1
 
-    # Draw the predicted bounding box
-    def __draw_pred(self, frame, class_id, conf, left, top, right, bottom):
+    def __draw_pred(self, class_id, conf, left, top, right, bottom):
+        """
+        Draw the predicted bounding box
+        :param class_id: id of the object's detected class
+        :param conf: confidence number
+        :param left: left coordinates of the bounding box
+        :param top: top coordinates of the bounding box
+        :param right: right coordinates of the bounding box
+        :param bottom: bottom coordinates of the bounding box
+        """
         # Draw a bounding box.
-        cv.rectangle(frame, (left, top), (right, bottom), (255, 178, 50), 3)
+        cv.rectangle(self.frame, (left, top), (right, bottom), (255, 178, 50), 3)
 
         label = '%.2f' % conf
 
         # Get the label for the class name and its confidence
-        if self.__classes:
-            assert (class_id < len(self.__classes))
-            label = '%s:%s' % (self.__classes[class_id], label)
+        if self.classes:
+            assert (class_id < len(self.classes))
+            label = '%s:%s' % (self.classes[class_id], label)
 
         # Display the label at the top of the bounding box
         label_size, base_line = cv.getTextSize(label, cv.FONT_HERSHEY_SIMPLEX, 0.5, 1)
         top = max(top, label_size[1])
-        cv.rectangle(frame, (left, top - round(1.5 * label_size[1])),
+        cv.rectangle(self.frame, (left, top - round(1.5 * label_size[1])),
                      (left + round(1.5 * label_size[0]), top + base_line), (255, 255, 255), cv.FILLED)
-        cv.putText(frame, label, (left, top), cv.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 0), 1)
+        cv.putText(self.frame, label, (left, top), cv.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 0), 1)
 
-    def __add_inference_time(self, frame):
-        # Put efficiency information. The function getPerfProfile returns the overall time for inference(t) and the
-        # timings for each of the layers(in layersTimes)
-        t, _ = self.__net.getPerfProfile()
+    def __add_inference_time(self):
+        """
+        Put efficiency information. The function getPerfProfile returns the overall time for inference(t) and the
+        timings for each of the layers(in layersTimes)
+        """
+        t, _ = self.net.getPerfProfile()
         label = 'Inference time: %.2f ms' % (t * 1000.0 / cv.getTickFrequency())
-        cv.putText(frame, label, (0, 15), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255))
+        cv.putText(self.frame, label, (0, 15), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255))
 
-    def _get_json(self):
-        return self.__frame_json
+    def get_frame_json(self):
+        """
+        Returns a JSON object with the number of detections for each detected class in the frame.
+        :return: the processed frame's detections in JSON format
+        """
+        return self.frame_json
 
 
 

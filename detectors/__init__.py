@@ -1,2 +1,2 @@
-from .video_detector import YOLOVideoDetector
-from .image_detector import YOLOImageDetector
+from .video_detector import VideoDetector
+from .image_detector import ImageDetector
