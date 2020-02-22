@@ -25,13 +25,15 @@ from datetime import datetime
 class VideoDetector:
     """Class to process a video by passing its frames to a YOLOFrameDetector"""
 
-    def __init__(self, config_file=None):
+    def __init__(self, config_file=None, config_dict=None):
         """
         Set the necessary variables.
         :param config_file: optional configuration file
         """
         if config_file is not None:
             Config.load_from_file(config_file)
+        elif config_file is not None:
+            Config.load_from_dict(config_dict)
 
         self.__frame_detector = YOLOFrameDetector(Config)
         self.__fps = Config.get('fps')

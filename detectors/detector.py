@@ -18,14 +18,18 @@ class YOLOFrameDetector:
     def __init__(self, config):
         """
         Set the necessary variables.
-        :param config: is a Config object. (from _config import Config)
+        :param config: is a Config object. (from config import Config)
         """
-        self.confidence_threshold = config.get('confidence_threshold')  # Confidence threshold
-        self.nms_threshold = config.get('nms_threshold')  # Non-maximum suppression threshold
-        self.input_width = config.get('input_width')  # Width of network's input image
-        self.input_height = config.get('input_height')  # Height of network's input image
+        self.confidence_threshold = config.get('confidence-threshold')  # Confidence threshold
+        self.nms_threshold = config.get('nms-threshold')  # Non-maximum suppression threshold
+        self.input_width = config.get('input-width')  # Width of network's input image
+        self.input_height = config.get('input-height')  # Height of network's input image
 
-        self.net = cv.dnn.readNetFromDarknet(config.get('model_cfg'), config.get('model_weights'))
+        model_cfg = config.get('model-cfg')
+        model_weights = config.get('model-weights')
+        model_classes = config.get('model-classes')
+
+        self.net = cv.dnn.readNetFromDarknet(model_cfg, model_weights)
         self.net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
         self.net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
 
@@ -33,13 +37,12 @@ class YOLOFrameDetector:
         self.frame = None
         self.frame_json = {'detections': {}}
 
-        self.__load_classes(config.get('model_classes'))
+        self.__load_classes(model_classes)
 
     def __load_classes(self, model_classes):
         """
         Load class names from file
-        :param model_classes: file with class names to load.
-        :return:
+        :param model-classes: file with class names to load.
         """
         with open(model_classes, 'r') as f:
             self.classes = [line.strip() for line in f.readlines()]
@@ -48,7 +51,6 @@ class YOLOFrameDetector:
         """
         Main function to process the given frame
         :param frame: a frame object for detection
-        :return: None
         """
         self.frame_json = {'detections': {}}
         self.frame = frame

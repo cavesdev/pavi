@@ -16,14 +16,14 @@ class Config:
     __conf = {
         'fps': 30,
         'frame-skip': 30,
-        'model_cfg': 'yolov3.cfg',
-        'model_weights': 'yolov3.weights',
-        'model_classes': 'coco.names',
+        'model-cfg': 'yolov3.cfg',
+        'model-weights': 'yolov3.weights',
+        'model-classes': 'coco.names',
         'output-filename': 'yolo_out_py',
-        'confidence_threshold': 0.5,
-        'nms_threshold': 0.4,
-        'input_width': 416,
-        'input_height': 416,
+        'confidence-threshold': 0.5,
+        'nms-threshold': 0.4,
+        'input-width': 416,
+        'input-height': 416,
     }
 
     # configurations that can be changed by the user

@@ -11,18 +11,42 @@ wget https://github.com/pjreddie/darknet/blob/master/data/coco.names\?raw=true -
 
 To import the detectors:
 ```python
-from detectors import YOLOVideoDetector
-from detectors import YOLOImageDetector
+from detectors import VideoDetector
+from detectors import ImageDetector
 ```
 
 The general process is:
 ```python
-d = YOLOVideoDetector()
+from detectors import VideoDetector
+d = VideoDetector(config_file='config.json')
+# or d = VideoDetector(config_dict={})
+"""
+Optional kwargs:
+- config_file: a JSON file with your configurations
+- config_dict: a dictionary with your configurations
+Just one is accepted, in the order mentioned.
+"""
 d.load_file('filename.mp4')
-d.interval = 30  # optional: set the number of frames to skip.
 d.process()
-d.write_json('filename.json') # optional: write the detection results to a JSON file.
+d.write_json_to_file('filename.json') # optional: write the detection results to a JSON file.
 ```
+
+Configurations accepted in the configuration file or dictionary:
+```json
+{
+  "model-cfg": "The path or filename of your yolov3.cfg",
+  "model-weights": "The path or filename of your yolov3.weights",
+  "model-classes": "The path of filename of your coco.names",
+  "output-filename": "Suffix that is added to the output filename",
+  "frame-skip": "[VIDEO] The number of frames to skip",
+  "fps": "[VIDEO] FPS of the given video file",
+  "confidence-threshold": "Minimum confidence value to keep the detected object",
+  "nms-threshold": "Minimum non maximum supression value to keep the detected object in postprocessing",
+  "input-width": "Width of network's input image",
+  "input-height": "Height of network's input image"
+}
+```
+
 
 Based from: 
 https://github.com/spmallick/learnopencv/tree/master/ObjectDetection-YOLO
