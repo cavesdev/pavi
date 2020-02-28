@@ -30,9 +30,9 @@ class Config:
     __setters = [
         'fps',
         'frame-skip',
-        'model_cfg',
-        'model_weights',
-        'model_classes',
+        'model-cfg',
+        'model-weights',
+        'model-classes',
         'output-filename'
     ]
 

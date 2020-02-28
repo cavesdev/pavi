@@ -68,13 +68,27 @@ class VideoDetector:
         """
         video_date = 1
         processed_date = datetime.now().__str__()
+        filename = os.path.basename(filename)
         name, extension = os.path.splitext(filename)
         tags = None
         duration = cv.CAP_PROP_FRAME_COUNT
 
-        algorithm = dict(algorithm='YOLOv3', processed_date=processed_date, detections=[])
-        video_metadata = dict(filename=name, capture_date=video_date, tags=tags, duration=duration, FPS=self.__fps,
-                              format=extension, processing=[algorithm])
+        algorithm = dict(
+            algorithm='YOLOv3',
+            processed_date=processed_date,
+            detections=[]
+        )
+
+        video_metadata = dict(
+            filename=name,
+            capture_date=video_date,
+            tags=tags,
+            duration=duration,
+            FPS=self.__fps,
+            format=extension,
+            processing=[algorithm]
+        )
+
         self.__video_json = video_metadata
 
     def process(self):
@@ -122,7 +136,11 @@ class VideoDetector:
         frame_json = self.__frame_detector.get_frame_json()
         seconds = current_frame / self.__fps
 
-        data = dict(frame=current_frame, seconds=seconds,objects=frame_json['detections'])
+        data = dict(
+            frame=current_frame,
+            seconds=seconds,
+            objects=frame_json['detections']
+        )
 
         self.__video_json.get('processing')[0].get('detections').append(data)
 
