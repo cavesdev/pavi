@@ -1,3 +1,12 @@
+"""
+Object detection in images with YOLOv3 algorithm.
+Class ImageDetector reads an image and passes it to YOLOFrameDetector for processing.
+
+Author: Carlos Cuevas
+@cavesdev
+February 2020
+"""
+
 from .detector import YOLOFrameDetector
 import cv2 as cv
 import numpy as np

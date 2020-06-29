@@ -1,2 +1,5 @@
 opencv-contrib-python<4.2
 numpy
+PyMongo
+Flask
+Flask-PyMongo

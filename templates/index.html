@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>MainPage</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link href="../static/index.css" rel="stylesheet">
+</head>
+
+<body>
+<!--Navigation-->
+<div id="navigationBar">
+    <nav class="navbar navabar-expand-md navbar-lightsticky-top" style="background-color: #0f4c75;">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <h3 id="textHeader">YOLO ALGORITHM</h3>
+            </a>
+        </div>
+    </nav>
+</div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-4" id="listVideos">
+            <ul class="list-group">
+                <li class="list-group-item list-group-item-secondary  bg-info text-center">Ultimos videos agregados</li>
+                {% for i in range(video_count) %}
+                    <li class="list-group-item list-group-item-action video-name">{{videos[i].filename}}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="col-8 ml-auto p-2">
+            <div id="video"  style="text-align: center">
+                <h3>Video con detecciones</h3>
+                <video id="currentVideo" src="{{ url_for('static', filename='videos/' + videos[0].filename + '.mp4') }}" width="720" height="405" autoplay loop muted></video>
+                <canvas id="myChart" width="100" height="60">
+                </canvas>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+
+
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+<script src="../static/index.js"></script>
+
+</body>
+
+</html>
