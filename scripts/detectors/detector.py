@@ -120,10 +120,10 @@ class YOLOFrameDetector:
             top = box[1]
             width = box[2]
             height = box[3]
-            self.__add_to_json(class_ids[i])
+            self.__add_to_json(class_ids[i], box)
             self.__draw_pred(class_ids[i], confidences[i], left, top, left + width, top + height)
 
-    def __add_to_json(self, class_id):
+    def __add_to_json(self, class_id, box):
         """
         Add the detected class to JSON
         If the class is already on JSON, add one to the counter.
@@ -131,12 +131,14 @@ class YOLOFrameDetector:
         """
         class_name = self.classes[class_id]
         class_exists = self.frame_json.get('detections').get(class_name)
+        box = dict(left=box[0], top=box[1], width=box[2], height=box[3])
 
         if class_exists is None:
-            new_class = {class_name: 1}
-            self.frame_json.get('detections').update(new_class)
+            new_class = dict(count=1, boxes=[box])
+            self.frame_json.get('detections').update({class_name: new_class})
         else:
-            self.frame_json['detections'][class_name] += 1
+            self.frame_json['detections'][class_name]['count'] += 1
+            self.frame_json['detections'][class_name]['boxes'].append(box)
 
     def __draw_pred(self, class_id, conf, left, top, right, bottom):
         """

@@ -1,7 +1,4 @@
-import json
-import argparse
-
-from pymongo import MongoClient
+import argparse, subprocess
 
 from detectors import VideoDetector
 
@@ -28,24 +25,7 @@ d.process()
 print('Guardando los resultados...')
 d.write_json_to_file(output_file)
 
-print('Subiendo los resultados a la base de datos...')
-# load to mongodb
-with open(output_file, "r") as f:
-    data = json.load(f)
-
-client = MongoClient()
-db = client.yolo
-videos = db.videos
-
-video = videos.find_one({'filename': data['filename']})
-
-if video is not None:
-    videos.replace_one(
-        {'filename': data['filename']},
-        data
-    )
-else:
-    videos.insert_one(data)
+subprocess.run(['python3', 'upload-to-db.py', f'-i {output_file}'])
 
 print('Listo!!!')
 

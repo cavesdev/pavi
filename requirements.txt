@@ -1,5 +1,5 @@
-opencv-contrib-python<4.2
-numpy
-PyMongo
-Flask
-Flask-PyMongo
+Flask==1.1.2
+Flask-PyMongo==2.3.0
+numpy==1.19.0
+opencv-contrib-python==4.1.2.30
+pymongo==3.10.1

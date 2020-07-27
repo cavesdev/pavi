@@ -1,6 +1,6 @@
 
 /content
-/helpers
+/scripts/helpers
 .DS_Store
 
 # Pycharm cache

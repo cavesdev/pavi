@@ -11,13 +11,13 @@ wget https://github.com/pjreddie/darknet/blob/master/data/coco.names\?raw=true -
 
 To import the detectors:
 ```python
-from detectors import VideoDetector
-from detectors import ImageDetector
+from scripts.detectors import VideoDetector
+from scripts.detectors import ImageDetector
 ```
 
 The general process is:
 ```python
-from detectors import VideoDetector
+from scripts.detectors import VideoDetector
 d = VideoDetector(config_file='config.json')
 # or d = VideoDetector(config_dict={})
 """
