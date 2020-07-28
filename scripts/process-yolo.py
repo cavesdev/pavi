@@ -1,4 +1,5 @@
-import argparse, subprocess
+import argparse
+import subprocess
 
 from detectors import VideoDetector
 
