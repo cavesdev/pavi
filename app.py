@@ -26,7 +26,7 @@ def index():
     return render_template('index.html', video_count=video_count, videos=newest_videos)
 
 
-@app.route('/search')
+@app.route('/search', method=["GET"])
 def query():
     """Buscar en la base de datos por nombre del video"""
     filename = request.args.get('filename')

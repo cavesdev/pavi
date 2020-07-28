@@ -17,33 +17,78 @@
             <a class="navbar-brand" href="#">
                 <h3 id="textHeader">YOLO ALGORITHM</h3>
             </a>
+                <form class="form-inline my-2 my-lg-0">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                </form>
         </div>
     </nav>
 </div>
 
 <div class="container-fluid">
-    <div class="row">
-        <div class="col-4" id="listVideos">
-            <ul class="list-group">
-                <li class="list-group-item list-group-item-secondary  bg-info text-center">Ultimos videos agregados</li>
-                {% for i in range(video_count) %}
-                    <li class="list-group-item list-group-item-action video-name">{{videos[i].filename}}</li>
-                {% endfor %}
-            </ul>
-        </div>
-        <div class="col-8 ml-auto p-2">
+    <div class="row row-cols-2 justify-content-around">
+        <div class="col">
             <div id="video"  style="text-align: center">
                 <h3>Video con detecciones</h3>
-                <video id="currentVideo" src="{{ url_for('static', filename='videos/' + videos[0].filename + '.mp4') }}" width="720" height="405" autoplay loop muted></video>
-                <canvas id="myChart" width="100" height="60">
-                </canvas>
+                <video id="currentVideo" src="{{ url_for('static', filename='videos/' + videos[0].filename + '.mp4') }}" width="480"  autoplay loop muted></video>
+                <form action="/search">
+                    <label for="myfile">Select a file:</label>
+                    <input type="file" id="myfile" name="myfile">
+                    <input type="submit">
+                </form>
             </div>
-
+        </div>
+            <div class="col-4 ">
+                <ul class="list-group">
+                    <li class="list-group-item list-group-item-secondary  bg-info text-center">Ultimos videos agregados</li>
+                        {% for i in range(video_count) %}
+                      <li class="list-group-item list-group-item-action video-name">{{videos[i].filename}}</li>
+                        {% endfor %}
+                </ul> 
+            </div>
+    </div>
+        <div class="row justify-content-around">
+        <div class="col-6" id="Chart">
+            <canvas id="myChart" width="100" height="60"></canvas>
         </div>
 
-    </div>
+        <div class= "col-4" id="info-table">
+            <table class="table" action="/search">
+                <tbody>    
+                    {% for index in range(len(video_data) - 1) %}
+                    <tr>
+                        <th scope="row">File name</th>
+                        <td> {{video_data.filename}}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Capture date</th>
+                        <td> {{video_data.capture_date}}</td>
+                    </tr>
+                     <tr>
+                        <th scope="row">Duration</th>
+                        <td> {{video_data.duration}}</td>
+                    </tr>
+                     <tr>
+                        <th scope="row">Algorithm</th>
+                        <td> {{video_data.processing[index].algorithm}}</td>
+                    </tr>
+                     <tr>
+                        <th scope="row">Number of detection</th>
+                        <td> {{video_data.processing[index].count}}</td>
+                    </tr>
+                    {% endfor%}
+                </tbody>
+
+            </table>
+        </div>
+        </div>
 </div>
 
+
+
+ 
+
+ 
 
 
 <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
