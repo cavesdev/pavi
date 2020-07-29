@@ -24,6 +24,7 @@ class Config:
         'nms-threshold': 0.4,
         'input-width': 416,
         'input-height': 416,
+        'gpu': False
     }
 
     # configurations that can be changed by the user
@@ -33,7 +34,8 @@ class Config:
         'model-cfg',
         'model-weights',
         'model-classes',
-        'output-filename'
+        'output-filename',
+        'gpu'
     ]
 
     @staticmethod

@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 
 from pymongo import MongoClient
 
@@ -14,8 +15,9 @@ print('Subiendo los resultados a la base de datos...')
 with open(json_file, "r") as f:
     data = json.load(f)
 
-client = MongoClient()
-db = client.yolo
+mongo_url = os.environ.get('MONGO_URI')
+client = MongoClient(mongo_url)
+db = client.pavi
 videos = db.videos
 
 video = videos.find_one({'filename': data['filename']})
