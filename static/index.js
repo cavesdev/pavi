@@ -28,7 +28,7 @@ function addClickListener(buttons) {
 
 function createChart(videoFile) {
     const ctx = document.getElementById('myChart').getContext('2d');
-    const data = parseJson(videoFile);
+    // const data = parseJson(videoFile);
 
     const red = 'rgb(255, 51,34)'
     const blue = 'rgb(91,192,222)'
@@ -96,7 +96,7 @@ function parseJson(filename) {
     let persons = [];
     let i = 0;
 
-    const request = new Request(`/query?filename=${filename}`);
+    const request = new Request(`/search?filename=${filename}`);
 
     fetch(request)
         .then(res => res.json())

@@ -1,12 +1,4 @@
 
-
-// import axios from 'axios';
-// const axios = require('axios');
-// const baseURl = "localhost:5000/";
-
-
-
-
 var data = {
 
   FPS: 30,
@@ -53,32 +45,36 @@ function generateTableContent(table, rowName, data){
     cell.appendChild(text2)
 
 }
+var videoData;
+function getData(videoName) {
+    const request = new Request(`localhost:5500/search?filename=trim`);
 
-(function getData() {
-    let dataPromise = new Promise(() => {
-        let req = new XMLHttpRequest();
-
-        req.open('get', 'localhost:5000/search')
-        req.send();
-        req.onload = function() {
-            console.log(req.response);
-        };
-    })
-})();
+    fetch(request)
+        .then(res => res.json())
+        .then(function(data) {
+            videoData = JSON.stringify(data);
+            console.log(data);
+            
+        });
+}
 
 // var jsonData
-let Promise = new Promise(axios.get('../scripts/data.json'))
+// let Promise = new Promise(axios.get('../scripts/data.json'))
 // Promise.then((data) => jsonData = data)
 // Promise.catch((error) => alert(error))
 
 var tableDiv = document.querySelector('table')
 // createTabe(tableDiv)
-generateTableContent(tableDiv, "File name   ", data.filename)
-generateTableContent(tableDiv, "Capture date    ",  data.capture_date)
-generateTableContent(tableDiv, "Algorithm   ", data.processing[0].algorithm)
-generateTableContent(tableDiv, "Number of items ", data.processing[0].detections[0].objects.car.count)
 
+var video = document.querySelector('video')
+var videoName = video.getAttribute("name")
+console.log(videoName)
+generateTableContent(tableDiv, "File name   ", videoData.filename)
+generateTableContent(tableDiv, "Capture date    ",  videoData.capture_date)
+generateTableContent(tableDiv, "Algorithm   ", videoData.processing[0].algorithm)
+generateTableContent(tableDiv, "Number of items ", videoData.processing[0].detections[0].objects.car.count)
 
+getData(videoName);
 console.log("I was able to get here")
 
 
