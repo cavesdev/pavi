@@ -24,7 +24,6 @@ def index():
     video_count = newest_videos.count()
     return render_template('index.html', video_count=video_count, videos=newest_videos)
 
-
 @app.route('/search')
 def search():
     """Buscar en la base de datos por nombre del video"""

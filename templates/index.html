@@ -7,6 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <link href="../static/index.css" rel="stylesheet">
+     
+    
 </head>
 
 <body>
@@ -17,33 +19,57 @@
             <a class="navbar-brand" href="#">
                 <h3 id="textHeader">YOLO ALGORITHM</h3>
             </a>
+                <form class="form-inline my-2 my-lg-0">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                </form>
         </div>
     </nav>
 </div>
 
 <div class="container-fluid">
-    <div class="row">
-        <div class="col-4" id="listVideos">
-            <ul class="list-group">
-                <li class="list-group-item list-group-item-secondary  bg-info text-center">Ultimos videos agregados</li>
-                {% for i in range(video_count) %}
-                    <li class="list-group-item list-group-item-action video-name">{{videos[i].filename}}</li>
-                {% endfor %}
-            </ul>
-        </div>
-        <div class="col-8 ml-auto p-2">
+    <div class="row row-cols-2 justify-content-around">
+        <div class="col">
             <div id="video"  style="text-align: center">
                 <h3>Video con detecciones</h3>
-                <video id="currentVideo" src="{{ url_for('static', filename='videos/' + videos[0].filename + '.mp4') }}" width="720" height="405" autoplay loop muted></video>
-                <canvas id="myChart" width="100" height="60">
-                </canvas>
+                <video name = "{{videos[0].filename}}"id="currentVideo" src="{{ url_for('static', filename='videos/' + videos[0].filename + '.mp4') }}" width="480"  autoplay loop muted></video>
+                <form>
+                    <label for="myfile">Select a file:</label>
+                    <input type="file" id="myfile" name="myfile">
+                    <input type="submit">
+                </form>
             </div>
-
         </div>
-
+            <div class="col-4 ">
+                <ul class="list-group">
+                    <li class="list-group-item list-group-item-secondary  bg-info text-center">Ultimos videos agregados</li>
+                        {% for i in range(video_count) %}
+                      <li class="list-group-item list-group-item-action video-name">{{videos[i].filename}}</li>
+                        {% endfor %}
+                </ul> 
+            </div>
     </div>
+        <div class="row justify-content-around">
+            <div class="col-6" id="Chart">
+                <canvas id="myChart" width="100" height="60"></canvas>
+            </div>
+        
+
+            <div class= "col-4" id="info-table">
+                <table class="table">
+
+
+                </table>
+           
+            </div>
+        </div>
 </div>
 
+
+
+ 
+
+ 
 
 
 <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
@@ -51,6 +77,8 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
 <script src="../static/index.js"></script>
+<script src="../static/videoInformation.js"></script>
+<script src="../static/getfiles.js"></script>
 
 </body>
 
