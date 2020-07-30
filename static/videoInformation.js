@@ -22,14 +22,14 @@ function generateTableContent(table, rowName, data){
     cell.appendChild(text2)
 
 }
-var videoData;
+
 function getData(videoName) {
-    const request = new Request(`/search?filename=${videoName}`);
+    const request = new Request(`https://my-json-server.typicode.com/typicode/demo/posts`);
 
     fetch(request)
         .then(res => res.json())
         .then(function(data) {
-       
+            console.log(data)
             var tableDiv = document.querySelector('table')
 // createTabe(tableDiv)
 
@@ -39,15 +39,16 @@ function getData(videoName) {
             generateTableContent(tableDiv, "File name   ", data.filename)
             generateTableContent(tableDiv, "Capture date    ",  data.capture_date)
             generateTableContent(tableDiv, "Algorithm   ", data.processing[0].algorithm)
-            generateTableContent(tableDiv, "Number of items ", data.processing[0].
+            generateTableContent(tableDiv, "Number of items ", data.processing[0].detections[0].car.count)
         });
 }
+
+getData();
 
 // var jsonData
 // let Promise = new Promise(axios.get('../scripts/data.json'))
 // Promise.then((data) => jsonData = data)
 // Promise.catch((error) => alert(error))
-
 
 
 
