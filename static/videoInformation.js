@@ -54,7 +54,7 @@ function generateTableContent(table, rowName, data){
 
 }
 
-function getData() {
+(function getData() {
     let dataPromise = new Promise(() => {
         let req = new XMLHttpRequest();
 
@@ -64,7 +64,7 @@ function getData() {
             console.log(req.response);
         };
     })
-}
+})();
 
 // var jsonData
 let Promise = new Promise(axios.get('../scripts/data.json'))
@@ -77,6 +77,7 @@ generateTableContent(tableDiv, "File name   ", data.filename)
 generateTableContent(tableDiv, "Capture date    ",  data.capture_date)
 generateTableContent(tableDiv, "Algorithm   ", data.processing[0].algorithm)
 generateTableContent(tableDiv, "Number of items ", data.processing[0].detections[0].objects.car.count)
+
 
 console.log("I was able to get here")
 
