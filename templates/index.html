@@ -7,6 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <link href="../static/index.css" rel="stylesheet">
+     
+    
 </head>
 
 <body>
@@ -48,39 +50,18 @@
             </div>
     </div>
         <div class="row justify-content-around">
-        <div class="col-6" id="Chart">
-            <canvas id="myChart" width="100" height="60"></canvas>
-        </div>
+            <div class="col-6" id="Chart">
+                <canvas id="myChart" width="100" height="60"></canvas>
+            </div>
+        
 
-        <div class= "col-4" id="info-table">
-            <table class="table" action="/search">
-                <tbody>    
-                    {% for index in range(len(video_data) - 1) %}
-                    <tr>
-                        <th scope="row">File name</th>
-                        <td> {{video_data.filename}}</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">Capture date</th>
-                        <td> {{video_data.capture_date}}</td>
-                    </tr>
-                     <tr>
-                        <th scope="row">Duration</th>
-                        <td> {{video_data.duration}}</td>
-                    </tr>
-                     <tr>
-                        <th scope="row">Algorithm</th>
-                        <td> {{video_data.processing[index].algorithm}}</td>
-                    </tr>
-                     <tr>
-                        <th scope="row">Number of detection</th>
-                        <td> {{video_data.processing[index].count}}</td>
-                    </tr>
-                    {% endfor%}
-                </tbody>
+            <div class= "col-4" id="info-table">
+                <table class="table">
 
-            </table>
-        </div>
+
+                </table>
+           
+            </div>
         </div>
 </div>
 
@@ -96,6 +77,7 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
 <script src="../static/index.js"></script>
+<script src="../static/videoInformation.js"></script>
 
 </body>
 
