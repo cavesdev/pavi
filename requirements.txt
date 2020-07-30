@@ -3,3 +3,4 @@ Flask-PyMongo==2.3.0
 numpy==1.19.0
 opencv-contrib-python==4.3.0.36
 pymongo[tls,srv]==3.10.1
+docker==4.2.2

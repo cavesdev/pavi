@@ -11,10 +11,12 @@ if 'MONGO_URI' not in os.environ:
     exit(1)
 
 mongo_url = os.environ.get('MONGO_URI')
-temp_folder = os.environ.get('TEMP_FOLDER')
+upload_folder = os.environ.get('UPLOAD_FOLDER')
 
 app = Flask(__name__)
 app.config["MONGO_URI"] = mongo_url
+app.config["UPLOAD_FOLDER"] = upload_folder
+
 mongo = PyMongo(app)
 db = mongo.db.videos
 
@@ -45,14 +47,14 @@ def allowed_file(filename):
 
 
 def run_yolo(video, config):
-    if config is not None:
-        subprocess.run(['python3', 'process-yolo.py', f'-v {video}', f'-c {config}'])
+    if len(config) > 1:
+        subprocess.run(['python3', f'scripts/process-yolo.py', f'-v {video}', f'-c {config}'])
     else:
-        subprocess.run(['python3', 'process-yolo.py', f'-v {video}'])
+        subprocess.run(['python3', f'scripts/process-yolo.py', f'-v {video}'])
 
 
-def run_pedestrian():
-    pass
+def run_pedestrian(video_filename):
+    subprocess.run(['python3', f'scripts/process-pedestrian.py', f'-v {video_filename}'])
 
 
 @app.route('/process', methods=['POST'])
@@ -72,12 +74,24 @@ def process():
     if video.filename == '':
         flash('No video selected')
         return redirect(request.url)
+    elif video and allowed_file(video.filename):
+        video_filename = secure_filename(video.filename)
+        video_path = os.path.join(app.config['UPLOAD_FOLDER'], 'videos', video_filename)
+        video.save(video_path)
+    else:
+        flash('An error ocurred with the video file.')
+        return redirect(request.url)
 
-    if video and allowed_file(video.filename):
-        filename = secure_filename(video.filename)
-        video.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    config = request.files['config']
 
-    config = request.form.get('config-route') or None
+    if config.filename == '':
+        config = None
+        config_path = ''
+    else:
+        config_filename = secure_filename(config.filename)
+        config_path = os.path.join(app.config['UPLOAD_FOLDER'], 'config', config_filename)
+        config.save(config_path)
+
     algorithm = request.form.get('algorithm')
 
     if algorithm not in allowed_algorithms:
@@ -85,8 +99,8 @@ def process():
         return redirect(request.url)
 
     if algorithm == 'yolo':
-        run_yolo(video, config)
+        run_yolo(video_path, config_path)
     elif algorithm == 'pedestrian':
-        run_pedestrian(video)
+        run_pedestrian(video_filename)
 
     return redirect('index.html')
