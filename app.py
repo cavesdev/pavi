@@ -16,12 +16,13 @@ temp_folder = os.environ.get('TEMP_FOLDER')
 app = Flask(__name__)
 app.config["MONGO_URI"] = mongo_url
 mongo = PyMongo(app)
+db = mongo.db.videos
 
 
 @app.route('/')
 def index():
     """Regresa los 10 videos más recientes de la base de datos"""
-    newest_videos = mongo.db.videos.find({}, {'filename': 1}).sort('_id', DESCENDING).limit(10)
+    newest_videos = db.find({}, {'filename': 1}).sort('_id', DESCENDING).limit(10)
     video_count = newest_videos.count()
     return render_template('index.html', video_count=video_count, videos=newest_videos)
 
@@ -30,7 +31,7 @@ def index():
 def query():
     """Buscar en la base de datos por nombre del video"""
     filename = request.args.get('filename')
-    video_data = mongo.db.videos.find_one({'filename': filename})
+    video_data = db.find_one({'filename': filename})
     return json.dumps(video_data, default=str)
 
 

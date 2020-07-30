@@ -30,8 +30,15 @@ class YOLOFrameDetector:
         model_classes = config.get('model-classes')
 
         self.net = cv.dnn.readNetFromDarknet(model_cfg, model_weights)
-        self.net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
-        self.net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
+
+        use_gpu = config.get('gpu')
+
+        if use_gpu is True:
+            self.net.setPreferableBackend(cv.dnn.DNN_BACKEND_CUDA)
+            self.net.setPreferableTarget(cv.dnn.DNN_TARGET_CUDA)
+        else:
+            self.net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
+            self.net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
 
         self.classes = None
         self.frame = None
@@ -131,7 +138,7 @@ class YOLOFrameDetector:
         """
         class_name = self.classes[class_id]
         class_exists = self.frame_json.get('detections').get(class_name)
-        box = dict(left=box[0], top=box[1], width=box[2], height=box[3])
+        box = dict(x=box[0], y=box[1], width=box[2], height=box[3])
 
         if class_exists is None:
             new_class = dict(count=1, boxes=[box])

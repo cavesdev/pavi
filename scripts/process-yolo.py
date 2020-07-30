@@ -3,7 +3,6 @@ import subprocess
 
 from detectors import VideoDetector
 
-# argumentos que acepta el programa
 ap = argparse.ArgumentParser()
 ap.add_argument('-v', '--video', required=True, help='Nombre del archivo de video a procesar')
 ap.add_argument('-o', '--output', help='Nombre del archivo en donde se guardarán los resultados (JSON)')
