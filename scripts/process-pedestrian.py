@@ -3,11 +3,13 @@ import os
 import subprocess
 import docker
 import sys
+import json
 
 client = docker.from_env()
 
 ap = argparse.ArgumentParser()
 ap.add_argument('-v', '--video', required=True, help='Nombre del archivo de video a procesar')
+ap.add_argument('-c', '--config', help='Nombre del archivo de donde se cargarán las configuraciones')
 args = vars(ap.parse_args())
 
 print('Cargando configuraciones...')
@@ -19,7 +21,27 @@ model_detection_path = '$INTEL_OPENVINO_DIR/deployment_tools/tools/model_downloa
                        '-0013/FP16/person-detection-retail-0013.xml '
 model_reidentification_path = '$INTEL_OPENVINO_DIR/deployment_tools/tools/model_downloader/intel/person' \
                               '-reidentification-retail-0031/FP16/person-reidentification-retail-0031.xml '
-sample_options = '-no_show -no_save -json'
+
+config_file = args['config']
+with open(config_file, "r") as f:
+    data = json.load(f)
+
+try:
+    no_show = data['no_show']
+    no_save = data['no_save']
+    save_json = data['json']
+except KeyError:
+    print('Error en el archivo de configuración. Saliendo...')
+    exit(1)
+
+sample_options = ''
+
+if no_show:
+    sample_options += '-no_show '
+if no_save:
+    sample_options += '-no_save '
+if save_json:
+    sample_options += '-json'
 
 command = f'/bin/bash -c "{script_path} -i {video_filename} -m_det {model_detection_path} ' \
           f'-m_reid {model_reidentification_path} -sample-options {sample_options}"'

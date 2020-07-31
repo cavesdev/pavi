@@ -35,11 +35,12 @@ def search():
 
 allowed_algorithms = ['yolo', 'pedestrian']
 allowed_video_formats = ['mp4']
+allowed_config_formats = ['json']
 
 
-def allowed_file(filename):
+def allowed_file(filename, formats):
     return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in allowed_video_formats
+           filename.rsplit('.', 1)[1].lower() in formats
 
 
 def run_yolo(video, config):
@@ -72,7 +73,7 @@ def process():
     if video.filename == '':
         flash('Ningún video seleccionado.')
         return redirect(request.url)
-    elif video and allowed_file(video.filename):
+    elif video and allowed_file(video.filename, allowed_video_formats):
         video_filename = secure_filename(video.filename)
         video_path = os.path.join(app.config['UPLOAD_FOLDER'], 'videos', video_filename)
         video.save(video_path)
@@ -83,18 +84,15 @@ def process():
     config = request.files['config']
 
     if config.filename == '':
-        abs_config_path = ''
-        # mientras se implementa el error en detector
-        flash('Ninguna configuración seleccionada.')
+        flash('Ningún archivo de configuración seleccionado.')
         return redirect(request.url)
-    else:
+    elif config and allowed_file(config.filename, allowed_config_formats):
         config_filename = secure_filename(config.filename)
         config_path = os.path.join(app.config['UPLOAD_FOLDER'], 'config', config_filename)
         config.save(config_path)
-        abs_config_path = os.path.join(os.getcwd(), config_path)
 
+    abs_config_path = os.path.join(os.getcwd(), config_path)
     abs_video_path = os.path.join(os.getcwd(), video_path)
-
     algorithm = request.form.get('algorithm')
 
     if algorithm not in allowed_algorithms:
@@ -104,6 +102,6 @@ def process():
     if algorithm == 'yolo':
         run_yolo(abs_video_path, abs_config_path)
     elif algorithm == 'pedestrian':
-        run_pedestrian(video_filename)
+        run_pedestrian(video_filename, abs_config_path)
 
     return redirect('/')
