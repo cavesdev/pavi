@@ -23,7 +23,7 @@ try:
 except docker.errors.ImageNotFound:
     print(f'La imagen {IMAGE_NAME} no existe en Docker. Favor de referirse al manual de usuario para las instrucciones'
           f' de instalación. Saliendo...')
-    # exit(1)
+    exit(1)
 
 print('Inicializando variables de entorno...')
 

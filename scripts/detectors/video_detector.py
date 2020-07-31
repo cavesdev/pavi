@@ -42,6 +42,7 @@ class VideoDetector:
         self.__vid_writer = None
         self.__video_json = {}
         self.__show = Config.get('show')
+        self.__save = Config.get('save')
 
     def load_file(self, filename):
         """
@@ -55,10 +56,11 @@ class VideoDetector:
         self.__cap = cv.VideoCapture(filename)
         output_file = filename[:-4] + Config.get('output-filename') + '.avi'
 
-        # Get the video writer initialized to save the output video
-        self.__vid_writer = cv.VideoWriter(output_file, cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), self.__fps,
-                                           (round(self.__cap.get(cv.CAP_PROP_FRAME_WIDTH)),
-                                            round(self.__cap.get(cv.CAP_PROP_FRAME_HEIGHT))))
+        if self.__save:
+            # Get the video writer initialized to save the output video
+            self.__vid_writer = cv.VideoWriter(output_file, cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), self.__fps,
+                                               (round(self.__cap.get(cv.CAP_PROP_FRAME_WIDTH)),
+                                                round(self.__cap.get(cv.CAP_PROP_FRAME_HEIGHT))))
         self.__initialize_json(filename)
 
     def __initialize_json(self, filename):
@@ -123,7 +125,9 @@ class VideoDetector:
             self.__frame_detector.process(frame)
 
             # write frame data
-            self.__vid_writer.write(frame.astype(np.uint8))
+            if self.__save:
+                self.__vid_writer.write(frame.astype(np.uint8))
+
             self.__update_json(current_frame)
 
             if self.__show:

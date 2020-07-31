@@ -25,7 +25,8 @@ class Config:
         'input-width': 416,
         'input-height': 416,
         'gpu': False,
-        'show': False
+        'show': False,
+        'save': False
     }
 
     # configurations that can be changed by the user
@@ -37,7 +38,8 @@ class Config:
         'model-classes',
         'output-filename',
         'gpu',
-        'show'
+        'show',
+        'save'
     ]
 
     @staticmethod
