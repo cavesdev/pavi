@@ -105,3 +105,7 @@ def process():
         run_pedestrian(video_filename, abs_config_path)
 
     return redirect('/')
+
+
+if __name__ == '__main__':
+    app.run()

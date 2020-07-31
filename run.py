@@ -1,6 +1,5 @@
 import os
 import subprocess
-import docker.errors
 
 IMAGE_NAME = 'openvinobuild'
 ENV_VARS = ['UPLOAD_FOLDER', 'MONGO_URI', 'PROJECT_DIR']
@@ -16,6 +15,7 @@ except subprocess.CalledProcessError as err:
 
 print('Checando si existe la imagen de Docker...')
 
+import docker.errors
 client = docker.from_env()
 
 try:
@@ -39,6 +39,25 @@ for var in ENV_VARS:
         print(f'La variable de entorno {var} no existe. Saliendo...')
         exit(1)
 
+print('Creando carpetas...')
+
+project_dir = os.environ.get('PROJECT_DIR')
+upload_folder = os.environ.get('UPLOAD_FOLDER')
+videos_dir = os.path.join(project_dir, upload_folder, 'videos')
+config_dir = os.path.join(project_dir, upload_folder, 'config')
+
+if not os.path.exists(videos_dir):
+    os.mkdir(videos_dir)
+    print("El directorio ", videos_dir, " fue creado.")
+else:
+    print("El directorio ", videos_dir, " ya existe.")
+
+if not os.path.exists(config_dir):
+    os.mkdir(config_dir)
+    print("El directorio ", config_dir, " fue creado.")
+else:
+    print("El directorio ", config_dir, " fue creado.")
+
 print('Iniciando programa...')
 
-subprocess.check_call(['flask', 'run'])
+subprocess.check_call(['python3', 'app.py'])
