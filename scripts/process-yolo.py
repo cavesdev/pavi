@@ -1,5 +1,7 @@
 import argparse
 import subprocess
+import sys
+import os
 
 from detectors import VideoDetector
 
@@ -13,6 +15,10 @@ output_file = args['output'] or 'data.json'
 config_file = args['config'] or None
 video_file = args['video']
 
+if config_file is not None:
+    config_file = config_file.strip()
+video_file = video_file.strip()
+
 print('Cargando configuraciones...')
 d = VideoDetector(config_file=config_file)
 
@@ -25,7 +31,10 @@ d.process()
 print('Guardando los resultados...')
 d.write_json_to_file(output_file)
 
-subprocess.run(['python3', 'upload-to-db.py', f'-i {output_file}'])
+project_dir = os.environ.get('PROJECT_DIR')
+script_path = os.path.join(project_dir, 'scripts', 'upload-to-db.py')
+
+subprocess.run([sys.executable, script_path, f'-i {output_file}'])
 
 print('Listo!!!')
 

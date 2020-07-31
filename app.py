@@ -24,6 +24,7 @@ def index():
     video_count = newest_videos.count()
     return render_template('index.html', video_count=video_count, videos=newest_videos)
 
+
 @app.route('/search')
 def search():
     """Buscar en la base de datos por nombre del video"""
@@ -82,11 +83,17 @@ def process():
     config = request.files['config']
 
     if config.filename == '':
-        config_path = ''
+        abs_config_path = ''
+        # mientras se implementa el error en detector
+        flash('Ninguna configuración seleccionada.')
+        return redirect(request.url)
     else:
         config_filename = secure_filename(config.filename)
         config_path = os.path.join(app.config['UPLOAD_FOLDER'], 'config', config_filename)
         config.save(config_path)
+        abs_config_path = os.path.join(os.getcwd(), config_path)
+
+    abs_video_path = os.path.join(os.getcwd(), video_path)
 
     algorithm = request.form.get('algorithm')
 
@@ -95,8 +102,8 @@ def process():
         return redirect(request.url)
 
     if algorithm == 'yolo':
-        run_yolo(video_path, config_path)
+        run_yolo(abs_video_path, abs_config_path)
     elif algorithm == 'pedestrian':
         run_pedestrian(video_filename)
 
-    return redirect('index.html')
+    return redirect('/')
