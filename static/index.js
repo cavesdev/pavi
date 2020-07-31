@@ -105,9 +105,9 @@ function parseJson(filename) {
                 processingObjects.detections.forEach(function(detectionsObjects) {
 
                     // TODO: need better method of getting this json data.
-                    cars.push(detectionsObjects.objects.car)
-                    seconds.push(detectionsObjects.seconds)
-                    persons.push(detectionsObjects.objects.person)
+                    cars.push(detectionsObjects.processing[0].detections[0].car.count)
+                    seconds.push(detectionsObjects.processing[0].detections[0].seconds)
+                    persons.push(detectionsObjects.processing[0].detections[2].person.count)
                     i++
                 })
             });
