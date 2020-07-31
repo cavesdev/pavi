@@ -3,7 +3,6 @@ import subprocess
 import docker.errors
 
 IMAGE_NAME = 'openvinobuild'
-IMAGE_PATH = os.path.join('docker', f'{IMAGE_NAME}.tar')
 ENV_VARS = ['UPLOAD_FOLDER', 'MONGO_URI', 'PROJECT_DIR']
 
 print('Instalando dependencias...')
@@ -15,22 +14,16 @@ except subprocess.CalledProcessError as err:
     print(f'Ocurrió un error al instalar las dependencias de Python: Error {err.returncode}. Saliendo...')
     exit(err.returncode)
 
-print('Cargando la imagen de Docker...')
+print('Checando si existe la imagen de Docker...')
 
-# client = docker.from_env()
-#
-# try:
-#     client.images.get(IMAGE_NAME)
-# except docker.errors.ImageNotFound:
-#     with open(IMAGE_PATH, 'rb') as binary_file:
-#         image = client.images.load(binary_file)
-#         image[0].tag(repository='pavi', tag=IMAGE_NAME)
-# except IOError:
-#     print(f'El archivo {IMAGE_PATH} no existe. Saliendo...')
-# except docker.errors.APIError:
-#     print('Ocurrió un error con Docker. Favor de checar si está corriendo correctamente en la PC. Saliendo...')
-# except:
-#     print('Ocurrió un error no identificado con Docker. Saliendo...')
+client = docker.from_env()
+
+try:
+    client.images.get(IMAGE_NAME)
+except docker.errors.ImageNotFound:
+    print(f'La imagen {IMAGE_NAME} no existe en Docker. Favor de referirse al manual de usuario para las instrucciones'
+          f' de instalación. Saliendo...')
+    # exit(1)
 
 print('Inicializando variables de entorno...')
 

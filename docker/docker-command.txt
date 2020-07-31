@@ -1,7 +1,0 @@
-./pedestrian_tracker_demo -i /docker/videos/trim.mp4 -m_det $INTEL_OPENVINO_DIR/deployment_tools/tools/model_downloader/intel/person-detection-retail-0013/FP16/person-detection-retail-0013.xml -m_reid $INTEL_OPENVINO_DIR/deployment_tools/tools/model_downloader/intel/person-reidentification-retail-0031/FP16/person-reidentification-retail-0031.xml -no_show
-
-docker run -it -u 0 --device /dev/dri:/dev/dri --device-cgroup-rule='c 189:* rmw' -v /dev/bus/usb:/dev/bus/usb --rm openvino/ubuntu18_dev:latest
-/bin/bash -c "apt update && apt install sudo && deployment_tools/demo/demo_security_barrier_camera.sh -d CPU -sample-options -no_show"
-
-sudo docker run -it -u 0 --device /dev/dri:/dev/dri --device-cgroup-rule='c 189:* rmw' -v /dev/bus/usb:/dev/bus/usb -v /home/caves/Desktop/openvino-docker:/docker --name openvinobuild openvino/ubuntu18_dev:latest
-
