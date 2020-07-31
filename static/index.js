@@ -101,15 +101,12 @@ function parseJson(filename) {
     fetch(request)
         .then(res => res.json())
         .then(function(data) {
-            data.processing.forEach(function(processingObjects) {
-                processingObjects.detections.forEach(function(detectionsObjects) {
-
+            data.forEach(function(detectionsObjects) {
                     // TODO: need better method of getting this json data.
                     cars.push(detectionsObjects.processing[0].detections[0].car.count)
                     seconds.push(detectionsObjects.processing[0].detections[0].seconds)
                     persons.push(detectionsObjects.processing[0].detections[2].person.count)
                     i++
-                })
             });
         });
 
