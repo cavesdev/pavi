@@ -2,6 +2,7 @@ import argparse
 import os
 import subprocess
 import docker
+import sys
 
 client = docker.from_env()
 
@@ -25,10 +26,13 @@ command = f'/bin/bash -c "{script_path} -i {video_filename} -m_det {model_detect
 
 print('Procesando video...')
 
+project_dir = os.environ.get('PROJECT_DIR')
+volume_path = os.path.join(project_dir, upload_folder)
+
 client.containers.run(
     tty=True,
     user=0,
-    volumes={f'../{upload_folder}': {'bind': '/docker', 'mode': 'rw'}},
+    volumes={volume_path: {'bind': '/docker', 'mode': 'rw'}},
     remove=True,
     image='openvinobuild',
     command=command
@@ -36,7 +40,10 @@ client.containers.run(
 
 print('Guardando los resultados...')
 
-output_file = os.path.join('..', upload_folder, 'data.json')
-subprocess.run(['python3', 'upload-to-db.py', f'-i {output_file}'])
+project_dir = os.environ.get('PROJECT_DIR')
+output_file = os.path.join(project_dir, upload_folder, 'data.json')
+script_path = os.path.join(project_dir, 'scripts', 'upload-to-db.py')
+
+subprocess.run([sys.executable, script_path, f'-i {output_file}'])
 
 print('Listo!!!')

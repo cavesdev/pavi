@@ -41,6 +41,7 @@ class VideoDetector:
         self.__cap = None
         self.__vid_writer = None
         self.__video_json = {}
+        self.__show = Config.get('show')
 
     def load_file(self, filename):
         """
@@ -96,7 +97,8 @@ class VideoDetector:
         Main function to process the video file.
         """
         window_name = 'Deep learning object detection in OpenCV'
-        cv.namedWindow(window_name, cv.WINDOW_NORMAL)
+        if self.__show:
+            cv.namedWindow(window_name, cv.WINDOW_NORMAL)
 
         current_frame = 0
 
@@ -123,7 +125,9 @@ class VideoDetector:
             # write frame data
             self.__vid_writer.write(frame.astype(np.uint8))
             self.__update_json(current_frame)
-            cv.imshow(window_name, frame)
+
+            if self.__show:
+                cv.imshow(window_name, frame)
 
         self.__cap.release()
         cv.destroyAllWindows()
