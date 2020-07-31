@@ -36,10 +36,10 @@ function getData(videoName) {
             var video = document.querySelector('video')
             var videoName = video.getAttribute("name")
             console.log(videoName)
-            generateTableContent(tableDiv, "File name   ", data.filename)
-            generateTableContent(tableDiv, "Capture date    ",  data.capture_date)
-            generateTableContent(tableDiv, "Algorithm   ", data.processing[0].algorithm)
-            generateTableContent(tableDiv, "Number of items ", data.processing[0].detections[0].car.count)
+            generateTableContent(tableDiv, "File name   ", data.id)
+            generateTableContent(tableDiv, "Capture date    ",  data.title)
+            generateTableContent(tableDiv, "Algorithm   ", data.id)
+            generateTableContent(tableDiv, "Number of items ", data.title)
         });
 }
 

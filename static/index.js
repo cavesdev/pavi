@@ -28,7 +28,7 @@ function addClickListener(buttons) {
 
 function createChart(videoFile) {
     const ctx = document.getElementById('myChart').getContext('2d');
-    // const data = parseJson(videoFile);
+    const data = parseJson(videoFile);
 
     const red = 'rgb(255, 51,34)'
     const blue = 'rgb(91,192,222)'
