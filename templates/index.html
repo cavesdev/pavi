@@ -19,7 +19,7 @@
             <a class="navbar-brand" href="#">
                 <h3 id="textHeader">YOLO ALGORITHM</h3>
             </a>
-                <form class="form-inline my-2 my-lg-0">
+                <form class="form-inline my-2 my-lg-0" action="/search" method="GET">
                     <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
                     <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
                 </form>
@@ -29,29 +29,36 @@
 
 <div class="container-fluid">
     <div class="row row-cols-2 justify-content-around">
-        <div class="col">
+        <div class="col-6">
             <div id="video"  style="text-align: center">
                 <h3>Video con detecciones</h3>
-                <video name="{{videos[0].filename}}" id="currentVideo" src="{{ url_for('static', filename='videos/' + videos[0].filename + '.mp4') }}" width="480" autoplay loop muted></video>
-                <form action="/process" method="post" enctype=multipart/form-data>
-                    <div class="form-group">
-                        <label for="video">Selecciona un video:</label>
-                        <input type="file" name="video" class="form-control mb-2">
+                <video name="{{videos[0].filename}}" id="currentVideo" src="{{ url_for('static', filename='videos/' + videos[0].filename + '.mp4') }}" width="720" autoplay loop muted></video>
+
+                <!--Form division for file solicitation-->
+                    <div class="col-8" >
+                        <form action="/process" method="POST" enctype=multipart/form-data>
+                            <div class="form-group">
+                                <label for="video">Selecciona un video:</label>
+                                <input type="file" name="video" class="form-control mb-2">
+                            </div>
+                            <div class="form-group">
+                                <label for="config">Selecciona un archivo de configuración (opcional)</label>
+                                <input type="file" name="config" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="algorithm">Selecciona el algoritmo a utilizar</label>
+                                <select class="form-control" name="algorithm">
+                                    <option value="yolo">YOLOv3</option>
+                                    <option value="pedestrian">OpenVINO Pedestrian Tracker</option>
+                                </select>
+                            </div>
+                            <input type="submit" class="btn btn-primary">
+                        </form>
                     </div>
-                    <div class="form-group">
-                        <label for="config">Selecciona un archivo de configuración (opcional)</label>
-                        <input type="file" name="config" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label for="algorithm">Selecciona el algoritmo a utilizar</label>
-                        <select class="form-control" name="algorithm">
-                            <option value="yolo">YOLOv3</option>
-                            <option value="pedestrian">OpenVINO Pedestrian Tracker</option>
-                        </select>
-                    </div>
-                    <input type="submit" class="btn btn-primary">
-                </form>
-            </div>
+             </div>
+
+
+
         </div>
             <div class="col-4 ">
                 <ul class="list-group">
@@ -60,20 +67,19 @@
                       <li class="list-group-item list-group-item-action video-name">{{videos[i].filename}}</li>
                         {% endfor %}
                 </ul> 
-            </div>
-    </div>
-        <div class="row justify-content-around">
-            <div class="col-6" id="Chart">
+
+                </br>
+                </br>
+                </br>
+                <table class="table">
+                </table>
                 <canvas id="myChart" width="100" height="60"></canvas>
             </div>
-        
-
+    </div>
+        <div class="row justify-content-end">
+          
             <div class= "col-4" id="info-table">
-                <table class="table">
-
-
-                </table>
-           
+              
             </div>
         </div>
 </div>
