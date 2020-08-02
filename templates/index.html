@@ -16,68 +16,59 @@
 <div id="navigationBar">
     <nav class="navbar navabar-expand-md navbar-lightsticky-top" style="background-color: #0f4c75;">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">
-                <h3 id="textHeader">YOLO ALGORITHM</h3>
-            </a>
+                <h3 id="textHeader">YOLO ALGORITHM</h3>   
         </div>
     </nav>
 </div>
 
-<div class="container-fluid">
+<div class="container">
     <div class="row row-cols-2 justify-content-around">
-        <div class="col-6">
-            <div id="video"  style="text-align: center">
-                <h3>Video con detecciones</h3>
-                <video name="{{videos[0].filename}}" id="currentVideo" src="{{ url_for('static', filename='videos/' + videos[0].filename + '.mp4') }}" width="480" autoplay loop muted></video>
 
-                <!--Form division for file solicitation-->
-                    <div class="col-8" >
-                        <form action="/process" method="POST" enctype=multipart/form-data>
-                            <div class="form-group">
-                                <label for="video">Selecciona un video:</label>
-                                <input type="file" name="video" class="form-control mb-2">
-                            </div>
-                            <div class="form-group">
-                                <label for="config">Selecciona un archivo de configuración (opcional)</label>
-                                <input type="file" name="config" class="form-control">
-                            </div>
-                            <div class="form-group">
-                                <label for="algorithm">Selecciona el algoritmo a utilizar</label>
-                                <select class="form-control" name="algorithm">
-                                    <option value="yolo">YOLOv3</option>
-                                    <option value="pedestrian">OpenVINO Pedestrian Tracker</option>
-                                </select>
-                            </div>
-                            <input type="submit" class="btn btn-primary">
-                        </form>
+    <div class="col-6">
+            <h3>Video con detecciones</h3>
+            <video name="{{videos[0].filename}}" id="currentVideo" src="{{ url_for('static', filename='videos/' + videos[0].filename + '.mp4') }}" width="480" autoplay loop muted></video>
+
+           <div class="col-8" >
+                <form action="/process" method="POST" enctype=multipart/form-data>
+                    <div class="form-group">
+                        <label for="video-file">Selecciona un video:</label>
+                        <input type="file" name="video" class="form-control mb-2">
                     </div>
-             </div>
-
-
-
-        </div>
-            <div class="col-4 ">
-                <ul class="list-group">
-                    <li class="list-group-item list-group-item-secondary  bg-info text-center">Ultimos videos agregados</li>
-                        {% for i in range(video_count) %}
-                      <li class="list-group-item list-group-item-action video-name">{{videos[i].filename}}</li>
-                        {% endfor %}
-                </ul> 
-
-                </br>
-                </br>
-                </br>
-                <table class="table">
-                </table>
-                <canvas id="myChart" width="100" height="60"></canvas>
+                    <div class="form-group">
+                        <label for="config">Selecciona un archivo de configuración (opcional)</label>
+                        <input type="file" name="config" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="algorithm">Selecciona el algoritmo a utilizar</label>
+                        <select class="form-control" name="algorithm">
+                            <option value="yolo">YOLOv3</option>
+                            <option value="pedestrian">OpenVINO Pedestrian Tracker</option>
+                        </select>
+                    </div>
+                    <input type="submit" class="btn btn-primary">
+                </form>
             </div>
+
     </div>
-        <div class="row justify-content-end">
-          
-            <div class= "col-4" id="info-table">
-              
-            </div>
+
+     <div class="col-6 ">
+        <ul class="list-group"> 
+            <li class="list-group-item list-group-item-secondary  bg-info text-center">Ultimos videos agregados</li>
+            {% for i in range(video_count) %}
+            <li class="list-group-item list-group-item-action video-name">{{videos[i].filename}}</li>
+            {% endfor %}
+        </ul> 
+
+        </br>
+        </br>
+        </br>
+        <table class="table">
+        </table>
+        <div >
+            <canvas id="myChart" ></canvas> 
+            <script src="../static/js/Chart.js"></script>
         </div>
+    </div>
 </div>
 
 
@@ -91,9 +82,8 @@
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
-<script src="../static/index.js"></script>
-<script src="../static/videoInformation.js"></script>
-<script src="../static/getfiles.js"></script>
+<script src="../static/js/videoInformation.js"></script>
+
 
 </body>
 
