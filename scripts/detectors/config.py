@@ -24,7 +24,6 @@ class Config:
         'nms-threshold': 0.4,
         'input-width': 416,
         'input-height': 416,
-        'gpu': False,
         'show': False,
         'save': False
     }
@@ -37,7 +36,6 @@ class Config:
         'model-weights',
         'model-classes',
         'output-filename',
-        'gpu',
         'show',
         'save'
     ]

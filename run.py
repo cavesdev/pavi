@@ -1,8 +1,9 @@
 import os
 import subprocess
+import sys
+import shutil
 
-IMAGE_NAME = 'openvinobuild'
-ENV_VARS = ['UPLOAD_FOLDER', 'MONGO_URI', 'PROJECT_DIR']
+ENV_VARS = ['UPLOAD_FOLDER', 'MONGO_URI', 'PROJECT_DIR', 'INTEL_OPENVINO_DIR']
 
 print('Instalando dependencias...')
 print('Instalando dependencias de Python...')
@@ -13,21 +14,8 @@ except subprocess.CalledProcessError as err:
     print(f'Ocurrió un error al instalar las dependencias de Python: Error {err.returncode}. Saliendo...')
     exit(err.returncode)
 
-print('Checando si existe la imagen de Docker...')
-
-import docker.errors
-client = docker.from_env()
-
-try:
-    client.images.get(IMAGE_NAME)
-except docker.errors.ImageNotFound:
-    print(f'La imagen {IMAGE_NAME} no existe en Docker. Favor de referirse al manual de usuario para las instrucciones'
-          f' de instalación. Saliendo...')
-    # exit(1)
-
 print('Inicializando variables de entorno...')
 
-# default value for UPLOAD_FOLDER environment variable.
 if os.environ.get('UPLOAD_FOLDER') is None:
     os.environ['UPLOAD_FOLDER'] = 'static'
 
@@ -43,6 +31,7 @@ print('Creando carpetas...')
 
 project_dir = os.environ.get('PROJECT_DIR')
 upload_folder = os.environ.get('UPLOAD_FOLDER')
+
 videos_dir = os.path.join(project_dir, upload_folder, 'videos')
 config_dir = os.path.join(project_dir, upload_folder, 'config')
 
@@ -58,6 +47,24 @@ if not os.path.exists(config_dir):
 else:
     print("El directorio ", config_dir, " fue creado.")
 
+print('Copiando archivos de OpenVINO...')
+
+src = os.path.join(project_dir, 'scripts', 'openvino', 'pedestrian_tracker')
+openvino_dir = os.environ.get('INTEL_OPENVINO_DIR')
+dst = os.path.join(openvino_dir, 'inference_engine', 'demos')
+
+shutil.copytree(src, dst)
+
+base_path = os.path.join(project_dir, 'scripts', 'openvino')
+dst = os.path.join(openvino_dir, 'deployment_tools', 'demo')
+
+src = os.path.join(base_path, 'run_pedestrian_tracker.conf')
+shutil.copy(src, dst)
+src = os.path.join(base_path, 'run_pedestrian_tracker.sh')
+shutil.copy(src, dst)
+src = os.path.join(base_path, 'update_and_run_pedestrian_tracker.sh')
+shutil.copy(src, dst)
+
 print('Iniciando programa...')
 
-subprocess.check_call(['python3', 'app.py'])
+subprocess.check_call([sys.executable, 'app.py'])

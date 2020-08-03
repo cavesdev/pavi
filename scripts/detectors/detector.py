@@ -31,14 +31,8 @@ class YOLOFrameDetector:
 
         self.net = cv.dnn.readNetFromDarknet(model_cfg, model_weights)
 
-        use_gpu = config.get('gpu')
-
-        if use_gpu is True:
-            self.net.setPreferableBackend(cv.dnn.DNN_BACKEND_CUDA)
-            self.net.setPreferableTarget(cv.dnn.DNN_TARGET_CUDA)
-        else:
-            self.net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
-            self.net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
+        self.net.setPreferableBackend(cv.dnn.DNN_BACKEND_DEFAULT)
+        self.net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
 
         self.classes = None
         self.frame = None

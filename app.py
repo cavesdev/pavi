@@ -1,6 +1,7 @@
 import json
 import subprocess
 import os
+import sys
 
 from flask import Flask, render_template, request, redirect, flash
 from flask_pymongo import PyMongo, DESCENDING
@@ -21,7 +22,7 @@ db = mongo.db.videos
 def index():
     """Regresa los 10 videos más recientes de la base de datos"""
     newest_videos = db.find({}, {'filename': 1}).sort('_id', DESCENDING).limit(10)
-    video_count = newest_videos.count()
+    video_count = newest_videos.count_documents()
     return render_template('index.html', video_count=video_count, videos=newest_videos)
 
 
@@ -46,14 +47,14 @@ def allowed_file(filename, formats):
 def run_yolo(video, config):
     script_path = os.path.join('scripts', 'process-yolo.py')
     if len(config) > 1:
-        subprocess.run(['python3', script_path, f'-v {video}', f'-c {config}'])
+        subprocess.run([sys.executable, script_path, f'-v {video}', f'-c {config}'])
     else:
-        subprocess.run(['python3', script_path, f'-v {video}'])
+        subprocess.run([sys.executable, script_path, f'-v {video}'])
 
 
-def run_pedestrian(video_filename):
-    script_path = os.path.join('scripts', 'process-pedestrian.py')
-    subprocess.run(['python3', script_path, f'-v {video_filename}'])
+def run_pedestrian(video_filename, config):
+    script_path = os.path.join('scripts', 'process-openvino.py')
+    subprocess.run([script_path, f'-v {video_filename}', f'-c {config}'])
 
 
 @app.route('/process', methods=['POST'])
