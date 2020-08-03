@@ -8,8 +8,8 @@ ap.add_argument('-v', '--video', required=True, help='Nombre del archivo de vide
 ap.add_argument('-c', '--config', help='Nombre del archivo de donde se cargarán las configuraciones')
 args = vars(ap.parse_args())
 
-video_filename = args['video']
-config_file = args['config']
+video_filename = args['video'].strip()
+config_file = args['config'].strip()
 
 with open(config_file, "r") as f:
     data = json.load(f)
@@ -32,7 +32,7 @@ if save_json:
     sample_options += '-json'
 
 openvino_dir = os.environ.get('INTEL_OPENVINO_DIR')
-script_path = os.path.join(openvino_dir, 'deployment_tools', 'demo', 'update_and_run_pedestrian_tracker.sh')
+script_path = os.path.join(openvino_dir, 'deployment_tools', 'demo', 'run_pedestrian_tracker.bat')
 
 subprocess.check_call([script_path,
                        f'-i {video_filename}',

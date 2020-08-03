@@ -47,24 +47,6 @@ if not os.path.exists(config_dir):
 else:
     print("El directorio ", config_dir, " fue creado.")
 
-print('Copiando archivos de OpenVINO...')
-
-src = os.path.join(project_dir, 'scripts', 'openvino', 'pedestrian_tracker')
-openvino_dir = os.environ.get('INTEL_OPENVINO_DIR')
-dst = os.path.join(openvino_dir, 'inference_engine', 'demos', 'pedestrian_tracker')
-
-shutil.copytree(src, dst, dirs_exist_ok=True)
-
-base_path = os.path.join(project_dir, 'scripts', 'openvino')
-dst = os.path.join(openvino_dir, 'deployment_tools', 'demo')
-
-src = os.path.join(base_path, 'run_pedestrian_tracker.conf')
-shutil.copy(src, dst)
-src = os.path.join(base_path, 'run_pedestrian_tracker.sh')
-shutil.copy(src, dst)
-src = os.path.join(base_path, 'update_and_run_pedestrian_tracker.sh')
-shutil.copy(src, dst)
-
 print('Iniciando programa...')
 
 subprocess.check_call([sys.executable, 'app.py'])
