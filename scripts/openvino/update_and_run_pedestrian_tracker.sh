@@ -11,8 +11,6 @@ VIDEO_DIR="$PROJECT_DIR/static/videos"
 usage() {
     echo "Process a video using OpenVINO engine and trained models."
     echo "-i		   filename of the video to process."
-    echo "-m_det	   path to the xml openvino person detection model."
-    echo "-m_reid	   path to the xml openvino person reidentification model."
     echo "-sample-options  extra parameters to pass to the program."
     echo " 	-no_show   process video on background, dont show video while processing."
     echo " 	-json      write detection results to a json file."

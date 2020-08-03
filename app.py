@@ -54,7 +54,7 @@ def run_yolo(video, config):
 
 def run_pedestrian(video_filename, config):
     script_path = os.path.join('scripts', 'process-openvino.py')
-    subprocess.run([script_path, f'-v {video_filename}', f'-c {config}'])
+    subprocess.run([sys.executable, script_path, f'-v {video_filename}', f'-c {config}'])
 
 
 @app.route('/process', methods=['POST'])

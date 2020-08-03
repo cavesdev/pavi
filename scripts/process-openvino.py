@@ -9,12 +9,8 @@ ap.add_argument('-c', '--config', help='Nombre del archivo de donde se cargarán
 args = vars(ap.parse_args())
 
 video_filename = args['video']
-model_detection_path = '$INTEL_OPENVINO_DIR/deployment_tools/tools/model_downloader/intel/person-detection-retail' \
-                       '-0013/FP16/person-detection-retail-0013.xml '
-model_reidentification_path = '$INTEL_OPENVINO_DIR/deployment_tools/tools/model_downloader/intel/person' \
-                              '-reidentification-retail-0031/FP16/person-reidentification-retail-0031.xml '
-
 config_file = args['config']
+
 with open(config_file, "r") as f:
     data = json.load(f)
 
@@ -40,6 +36,4 @@ script_path = os.path.join(openvino_dir, 'deployment_tools', 'demo', 'update_and
 
 subprocess.check_call([script_path,
                        f'-i {video_filename}',
-                       f'-m_det {model_detection_path}',
-                       f'-m_reid {model_reidentification_path}',
                        f'-sample-options {sample_options}'])
