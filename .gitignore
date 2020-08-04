@@ -1,4 +1,6 @@
 .DS_Store
+data.json
+scripts/data.json
 
 # Pycharm cache
 .idea/
