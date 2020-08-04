@@ -3,7 +3,7 @@ import subprocess
 import sys
 import shutil
 
-ENV_VARS = ['UPLOAD_FOLDER', 'MONGO_URI', 'PROJECT_DIR', 'INTEL_OPENVINO_DIR']
+ENV_VARS = ['UPLOAD_FOLDER', 'MONGO_URI', 'PROJECT_DIR']
 
 print('Instalando dependencias...')
 print('Instalando dependencias de Python...')

@@ -1,52 +1,27 @@
-# yolo-detection
-Python script using YOLOv3 algorithm and OpenCV to detect objects in images and video. 
+# Plataforma de Análisis de Video UADY
 
-To get the helper files use the following commands:
+## Versión 0.1 ALPHA
 
-```shell script
-wget https://pjreddie.com/media/files/yolov3.weights
-wget https://github.com/pjreddie/darknet/blob/master/cfg/yolov3.cfg\?raw=true -O yolov3.cfg
-wget https://github.com/pjreddie/darknet/blob/master/data/coco.names\?raw=true -O coco.names
-```
+### Acerca del proyecto
+La plataforma de análisis de video tiene las siguientes funciones:
 
-To import the detectors:
-```python
-from scripts.detectors import VideoDetector
-from scripts.detectors import ImageDetector
-```
+- Procesar videos con diferentes algoritmos.*
+- Visualizar datos obtenidos de los videos.
+- Mantener una base de datos con metadatos de los videos y sus resultados.
 
-The general process is:
-```python
-from scripts.detectors import VideoDetector
-d = VideoDetector(config_file='config.json')
-# or d = VideoDetector(config_dict={})
-"""
-Optional kwargs:
-- config_file: a JSON file with your configurations
-- config_dict: a dictionary with your configurations
-Just one is accepted, in the order mentioned.
-"""
-d.load_file('filename.mp4')
-d.process()
-d.write_json_to_file('filename.json') # optional: write the detection results to a JSON file.
-```
+*Algoritmos soportados actualmente: YOLOv3, OpenVINO Pedestrian Tracker.
 
-Configurations accepted in the configuration file or dictionary:
-```json
-{
-  "model-cfg": "The path or filename of your yolov3.cfg",
-  "model-weights": "The path or filename of your yolov3.weights",
-  "model-classes": "The path of filename of your coco.names",
-  "output-filename": "Suffix that is added to the output filename",
-  "frame-skip": "[VIDEO] The number of frames to skip",
-  "fps": "[VIDEO] FPS of the given video file",
-  "confidence-threshold": "Minimum confidence value to keep the detected object",
-  "nms-threshold": "Minimum non maximum supression value to keep the detected object in postprocessing",
-  "input-width": "Width of network's input image",
-  "input-height": "Height of network's input image"
-}
-```
-
-
-Based from: 
-https://github.com/spmallick/learnopencv/tree/master/ObjectDetection-YOLO
+### PENDIENTES:
+- Evitar Docker y utilizar OpenVINO instalado de manera local, ya que la imagen de Docker ocupa mucho espacio y la
+instalación de OpenVINO provee la biblioteca de OpenCV con el Inference Engine de Intel, lo que acelera el procesamiento
+en equipos sin GPU. Ya se encuentra código para esto solamente que no está implementado aún. (Véase *scripts/openvino*)
+- Integrar OpenCV compilado con librerías CUDA. El OpenCV que se instala mediante Python no incluye funcionalidad para
+utilizar GPU.
+- Mejor integración multiplataforma. 
+- Refactorizar el código de Python, sin tener tantas llamadas a diferentes scripts en app.py. (¿Funciones? ¿Módulos?)
+- Mejor manejo de las credenciales de la base de datos.
+- Implementar sistema de autenticación para tenerlo en línea.
+- Determinar cómo se guardarán los archivos de video. (¿Almacenamiento en línea? ¿Servidor local? 
+¿Sólo guardar los recientes?)
+- Manejo de videos en el UI. (procesados vs original)
+- Mostrar progreso del procesamiento en el UI web.

@@ -22,7 +22,7 @@ db = mongo.db.videos
 def index():
     """Regresa los 10 videos más recientes de la base de datos"""
     newest_videos = db.find({}, {'filename': 1}).sort('_id', DESCENDING).limit(10)
-    video_count = newest_videos.count_documents()
+    video_count = newest_videos.count()
     return render_template('index.html', video_count=video_count, videos=newest_videos)
 
 
@@ -53,7 +53,7 @@ def run_yolo(video, config):
 
 
 def run_pedestrian(video_filename, config):
-    script_path = os.path.join('scripts', 'process-openvino.py')
+    script_path = os.path.join('scripts', 'process-pedestrian-docker.py')
     subprocess.run([sys.executable, script_path, f'-v {video_filename}', f'-c {config}'])
 
 

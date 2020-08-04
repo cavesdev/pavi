@@ -22,10 +22,33 @@ videos = db.videos
 
 video = videos.find_one({'filename': data['filename']})
 
+
+def has_algorithm(video, data):
+    algorithm = data['processing'][0]['algorithm']
+    found = False
+    index = 0
+    for item in video['processing']:
+        if item['algorithm'] == algorithm:
+            found = True
+            found_index = index
+        index += 1
+    return found, found_index
+
+
 if video is not None:
+
+    found, index = has_algorithm(video, data)
+
+    if found:
+        # replace algorithm data
+        video['processing'][index] = data['processing'][0]
+    else:
+        # add algorithm data
+        video['processing'] += data['processing']
+
     videos.replace_one(
         {'filename': data['filename']},
-        data
+        video
     )
 else:
     videos.insert_one(data)
