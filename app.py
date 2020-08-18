@@ -3,35 +3,15 @@ import subprocess
 import os
 import sys
 
-from flask import Flask, render_template, request, redirect, flash
-from flask_pymongo import PyMongo, DESCENDING
+from flask import Flask, request, redirect, flash
+from routes import videos
 from werkzeug.utils import secure_filename
 
-mongo_url = os.environ.get('MONGO_URI')
 upload_folder = os.environ.get('UPLOAD_FOLDER')
 
 app = Flask(__name__)
-app.config["MONGO_URI"] = mongo_url
 app.config["UPLOAD_FOLDER"] = upload_folder
-
-mongo = PyMongo(app)
-db = mongo.db.videos
-
-
-@app.route('/')
-def index():
-    """Regresa los 10 videos más recientes de la base de datos"""
-    newest_videos = db.find({}, {'filename': 1}).sort('_id', DESCENDING).limit(10)
-    video_count = newest_videos.count()
-    return render_template('index.html', video_count=video_count, videos=newest_videos)
-
-
-@app.route('/search')
-def search():
-    """Buscar en la base de datos por nombre del video"""
-    filename = request.args.get('filename')
-    video_data = db.find_one({'filename': filename})
-    return json.dumps(video_data, default=str)
+app.register_blueprint(videos.bp, url_prefix='/api/videos')
 
 
 allowed_algorithms = ['yolo', 'pedestrian']

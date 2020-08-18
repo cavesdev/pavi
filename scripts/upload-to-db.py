@@ -27,6 +27,7 @@ def has_algorithm(video, data):
     algorithm = data['processing'][0]['algorithm']
     found = False
     index = 0
+    found_index = 0
     for item in video['processing']:
         if item['algorithm'] == algorithm:
             found = True
