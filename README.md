@@ -42,4 +42,24 @@ ARQUITECTURA.
 - Mostrar progreso del procesamiento en el UI web.
 - Botones para ir cambiando entre los archivos de video procesados.
 
+### Otras tareas
+
+1. Parametrizar desde la web app los datos necesarios del json en la configuración de cada algoritmo. Estos datos deben mostrarse al usuario de acuerdo al algoritmo.
+2. En la gráfica, sería conveniente una comparación del algoritmo (ejecutándose cada uno por separado o juntos quizás), mostrando cuál es el algoritmo que detectó mejor los objetos (claro está solo objetos comunes detectables por cada algoritmo)
+3. Verificar que una gráfica muestre correctamente los datos obtenidos de MongoDB, usando REACT
+4. Usando la historia de usuario crear el Mock UI en figma y enviarlo al PO.
+5. Verificar que las tablas de la interfaz estén sincronizados con los valores obtenidos de MongoDB, usando REACT
+6. El título de la webapp cambiarlo, me parece que dice solamente el nombre de un algoritmo.
+7. Agrega logo facultad o logo Uady
+8. Hacer un análisis de los atributos necesarios de la BD de tal manera que sean más flexible, fácil y adecuada las consultas.
+9. Fecha y hora de captura del video.
+10. La división de vídeos largos en vídeos cortos para mayor facilidad de manipulación.
+11. La posibilidad de manejar otro formato de vídeo más ligero.
+12. Estimar el escalamiento del tamaño de la BD de acuerdo a los videos
+13. Exportar datos a CSV controlado por frames (o segundos)
+14. Hacer uniforme la medida usada en la interfaz ya sea frame o segundos
+15. Hacer explícita la acción de cargar un video y procesarlo contra ver los resultados de un video ya procesado. Diseño de la interfaz con React.
+16. Agregar el dato CameraID y ProcessingDate en los documentos
+17. Registrar en la BD de Mongo, datos de las trayectorias de los objetos identificados.
+18. Definir historias de usuario para la página web de PAVI (JR)
 

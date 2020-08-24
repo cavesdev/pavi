@@ -1,27 +1,24 @@
-import json
 import subprocess
 import os
 import sys
 
-from flask import Flask, request, redirect, flash
-from routes import videos
+from flask import Flask, request, redirect, flash, render_template
+from routes import videos, process
 from werkzeug.utils import secure_filename
 
 upload_folder = os.environ.get('UPLOAD_FOLDER')
 
 app = Flask(__name__)
-app.config["UPLOAD_FOLDER"] = upload_folder
+app.config['UPLOAD_FOLDER'] = upload_folder
+app.config['BASE_DIR'] = os.getcwd()
+
 app.register_blueprint(videos.bp, url_prefix='/api/videos')
+app.register_blueprint(process.bp, url_prefix='/api/process')
 
 
-allowed_algorithms = ['yolo', 'pedestrian']
-allowed_video_formats = ['mp4']
-allowed_config_formats = ['json']
-
-
-def allowed_file(filename, formats):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in formats
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 
 def run_yolo(video, config):
@@ -39,28 +36,6 @@ def run_pedestrian(video_filename, config):
 
 @app.route('/process', methods=['POST'])
 def process():
-    """Procesar un nuevo video"""
-
-    if request.method != 'POST':
-        flash('Método HTTP no aceptado.')
-        return redirect(request.url)
-
-    if 'video' not in request.files:
-        flash('El formulario no contiene el apartado para subir video.')
-        return redirect(request.url)
-
-    video = request.files['video']
-
-    if video.filename == '':
-        flash('Ningún video seleccionado.')
-        return redirect(request.url)
-    elif video and allowed_file(video.filename, allowed_video_formats):
-        video_filename = secure_filename(video.filename)
-        video_path = os.path.join(app.config['UPLOAD_FOLDER'], 'videos', video_filename)
-        video.save(video_path)
-    else:
-        flash('Ocurrió un error con el archivo de video.')
-        return redirect(request.url)
 
     config = request.files['config']
 
