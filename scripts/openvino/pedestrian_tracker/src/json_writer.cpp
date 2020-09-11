@@ -68,7 +68,7 @@ void JSONWriter::add_to_json(TrackedObjects detections, int frame_index, int tim
 
     det["frame"] = frame_index;
     det["seconds"] = timestamp / 1000;
-    det["objects"] = { {"persons", person} };
+    det["objects"] = { {"person", person} };
 
     j["processing"][0]["detections"] += det;
 
@@ -79,7 +79,7 @@ void JSONWriter::write_json_file() {
     cout << "writing..." << endl;
 
     ofstream jsonfile;
-    jsonfile.open("/docker/data.json");
+    jsonfile.open("/home/caves/Desktop/pavi/yolo-detection/data.json");
 
     if (!jsonfile.is_open()) {
         throw runtime_error("Can't open file data.json to write.\n");
