@@ -12,21 +12,37 @@
 <body>
     <!--Navigation-->
     <div id="navigationBar">
-        <nav class="navbar navabar-expand-md navbar-lightsticky-top" style="background-color: #0f4c75;">
+        <nav class="navbar navabar-expand-md navbar-lightsticky-top" style="background-color: #e5e5e5;">
             <div class="container-fluid">
-                    <h3 id="textHeader">YOLO ALGORITHM</h3>
+                    <img id="logo" src="//upload.wikimedia.org/wikipedia/commons/thumb/8/8e/UADY_logo.svg/800px-UADY_logo.svg.png">
+                    <h2>PAVI</h2>
             </div>
         </nav>
     </div>
 
-    <div class="container">
+    <div class="containers-fluid">
         <div class="row row-cols-2 justify-content-around">
 
             <div class="col-6">
                     <h3>Video con detecciones</h3>
-                    <video name="{{videos[0].filename}}" id="currentVideo" src="{{ url_for('static', filename='videos/' + videos[0].filename + '.mp4') }}" width="480" autoplay loop muted></video>
+                    <video name="{{videos[0].filename}}" id="currentVideo" src="{{ url_for('static', filename='videos/' + videos[0].filename + '.mp4') }}" width="640" autoplay loop muted></video>
+                    <div >
+                        <iframe id="chart" style="background: #FFFFFF;border: none;border-radius: 2px;box-shadow: 0 2px 10px 0 rgba(70, 76, 79, .2);" width="720" height="480" src="https://charts.mongodb.com/charts-project-0-cceje/embed/charts?id=9ca4866f-319b-48f6-a76a-4a93d8d05541&theme=light"></iframe>
+                    </div>
 
-                   <div class="col-8" >
+            </div>
+
+             <div class="col-4">
+                <ul class="list-group">
+                    <li id="list-header" class="list-group-item list-group-item-secondary  text-center">Ultimos videos agregados</li>
+                    {% for i in range(video_count) %}
+                    <li class="list-group-item list-group-item-action video-name">{{videos[i].filename}}</li>
+                    {% endfor %}
+                </ul>
+
+                </br>
+                </br>
+                </br>
                         <form action="/process" method="POST" enctype=multipart/form-data>
                             <div class="form-group">
                                 <label for="video-file">Selecciona un video:</label>
@@ -45,8 +61,6 @@
                             </div>
                             <input type="submit" class="btn btn-primary">
                         </form>
-                    </div>
-
             </div>
 
              <div class="col-6 ">
