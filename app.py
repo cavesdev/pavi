@@ -91,6 +91,9 @@ def process():
         config_filename = secure_filename(config.filename)
         config_path = os.path.join(app.config['UPLOAD_FOLDER'], 'config', config_filename)
         config.save(config_path)
+    else:
+        flash('Ocurrio un error.')
+        return redirect(request.url)
 
     abs_config_path = os.path.join(os.getcwd(), config_path)
     abs_video_path = os.path.join(os.getcwd(), video_path)
