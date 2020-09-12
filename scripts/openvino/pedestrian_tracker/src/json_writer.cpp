@@ -79,7 +79,7 @@ void JSONWriter::write_json_file() {
     cout << "writing..." << endl;
 
     ofstream jsonfile;
-    jsonfile.open("/home/caves/Desktop/pavi/yolo-detection/data.json");
+    jsonfile.open("/home/caves/Desktop/pavi/yolo-detection/static/data.json");
 
     if (!jsonfile.is_open()) {
         throw runtime_error("Can't open file data.json to write.\n");
