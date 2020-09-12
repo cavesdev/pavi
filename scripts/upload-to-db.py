@@ -26,6 +26,7 @@ video = videos.find_one({'filename': data['filename']})
 def has_algorithm(video, data):
     algorithm = data['processing'][0]['algorithm']
     found = False
+    found_index = 0
     index = 0
     for item in video['processing']:
         if item['algorithm'] == algorithm:
