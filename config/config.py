@@ -11,12 +11,14 @@ load_dotenv()
 class Config:
     __conf = {
         'dev': os.getenv('FLASK_ENV') != 'production',
-        'port': os.getenv('PORT') or 3000,
+        'port': os.getenv('PORT') or 5000,
         'db_user': os.getenv('DB_USER'),
         'db_password': os.getenv('DB_PASSWORD'),
         'db_host': os.getenv('DB_HOST'),
         'db_name': os.getenv('DB_NAME'),
-        'db_collection': os.getenv('DB_COLLECTION')
+        'db_collection': os.getenv('DB_COLLECTION'),
+        'upload_folder': os.getenv('UPLOAD_FOLDER') or os.path.join('static', 'videos'),
+        'upload_size_limit': 100 * 1024 * 1024 # 100MB
     }
 
     @staticmethod
