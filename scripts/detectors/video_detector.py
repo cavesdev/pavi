@@ -32,7 +32,7 @@ class VideoDetector:
         """
         if config_file is not None:
             Config.load_from_file(config_file)
-        elif config_file is not None:
+        elif config_dict is not None:
             Config.load_from_dict(config_dict)
 
         self.__frame_detector = YOLOFrameDetector(Config)

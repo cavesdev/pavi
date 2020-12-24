@@ -1,39 +1,35 @@
-import json
-import subprocess
-import os
-import sys
+from lib.mongo import MongoLib
+from config.config import Config
+from bson.objectid import ObjectId
+from bson.errors import InvalidId
+from util.process_video_utils import validate_headers, save_uploaded_video
 
-from flask import Flask, render_template, request, redirect, flash
-from flask_pymongo import PyMongo, DESCENDING
-from werkzeug.utils import secure_filename
+from flask import Flask, request, abort
 
-mongo_url = os.environ.get('MONGO_URI')
-upload_folder = os.environ.get('UPLOAD_FOLDER')
 
 app = Flask(__name__)
-app.config["MONGO_URI"] = mongo_url
-app.config["UPLOAD_FOLDER"] = upload_folder
+app.config['MAX_CONTENT_LENGTH'] = Config.get('upload_size_limit')
 
-mongo = PyMongo(app)
-db = mongo.db.videos
-
-
-@app.route('/')
-def index():
-    """Regresa los 10 videos más recientes de la base de datos"""
-    newest_videos = db.find({}, {'filename': 1}).sort('_id', DESCENDING).limit(10)
-    video_count = newest_videos.count()
-    return render_template('index.html', video_count=video_count, videos=newest_videos)
+db_client = MongoLib()
+collection = Config.get('db_collection')
 
 
-@app.route('/search')
-def search():
-    """Buscar en la base de datos por nombre del video"""
-    filename = request.args.get('filename')
-    video_data = db.find_one({'filename': filename})
-    return json.dumps(video_data, default=str)
+@app.route('/results/<video_id>', methods=['GET'])
+def get_result(video_id):
+    try:
+        video_id = ObjectId(video_id)
+    except InvalidId:
+        abort(400, description="Incorrect ID value, please refer to the documentation.")
+
+    return db_client.get(collection, video_id)
 
 
+@app.route('/upload', methods=['POST'])
+def process_video():
+    validate_headers(request.headers)
+    save_uploaded_video(request.files, Config.get('upload_folder'))
+
+<<<<<<< HEAD
 allowed_algorithms = ['yolo', 'pedestrian']
 allowed_video_formats = ['mp4']
 allowed_config_formats = ['json']
@@ -109,6 +105,11 @@ def process():
         run_pedestrian(video_filename, abs_config_path)
 
     return redirect('/')
+=======
+    return {
+        'message': 'Video uploaded.'
+    }
+>>>>>>> arq_refactor
 
 
 if __name__ == '__main__':
