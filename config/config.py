@@ -18,7 +18,7 @@ class Config:
         'db_name': os.getenv('DB_NAME'),
         'db_collection': os.getenv('DB_COLLECTION'),
         'upload_folder': os.getenv('UPLOAD_FOLDER') or os.path.join('static', 'videos'),
-        'upload_size_limit': 100 * 1024 * 1024 # 100MB
+        'upload_size_limit': os.getenv('UPLOAD_SIZE_LIMIT') or 100 * 1024 * 1024  # 100MB
     }
 
     @staticmethod

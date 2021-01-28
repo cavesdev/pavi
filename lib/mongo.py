@@ -1,4 +1,4 @@
-from config.config import Config
+from pavi.config.config import Config
 from pymongo import MongoClient, DESCENDING
 from bson.objectid import ObjectId
 import urllib.parse
@@ -27,6 +27,11 @@ class MongoLib:
         """Returns a single object with given ID"""
         collection = self.db[collection]
         return collection.find_one({'_id': ObjectId(id)})
+
+    def get_by_field(self, collection, field, value):
+        """Returns a single object with given field and value"""
+        collection = self.db[collection]
+        return collection.find_one({field: value})
 
     def insert(self, collection, document):
         """Inserts document into database and returns the inserted object ID"""

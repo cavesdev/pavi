@@ -35,7 +35,9 @@ def save_uploaded_video(files, upload_folder):
 
     if video and supported_file(video.filename):
         filename = secure_filename(video.filename)
-        video.save(os.path.join(upload_folder, filename))
+        video_path = os.path.join(upload_folder, filename)
+        video.save(video_path)
+        return video_path
     else:
         abort(415, description="Video format not supported.")
 
