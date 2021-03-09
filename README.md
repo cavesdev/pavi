@@ -15,8 +15,7 @@ La plataforma de análisis de video (de aquí en adelante, PAVI) es una API que 
 
 ### Algunos pendientes:
 
-- Tamaño de los JSON muy grande dependiendo la configuración usada.
-- Probar el procesamiento con una menor resolución. Comparar rendimiento y presición.
+- Renombrar videos con UUID en main API.
 - Probar integración multiplataforma. 
 - Implementar sistema de autenticación para tenerlo en línea.
 - Experimentar con códecs de video, los cuales influyen en el tamaño de los archivos.

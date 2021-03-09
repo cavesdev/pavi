@@ -1,10 +1,10 @@
 import os
+import uuid
 
 from flask import abort
-from werkzeug.utils import secure_filename
 
 SUPPORTED_VIDEO_FORMATS = ['mp4']
-SUPPORTED_ALGORITHMS = ['yolov3', 'pedestrian-tracker']
+SUPPORTED_ALGORITHMS = ['yolov3', 'pedestrian-tracker', 'heatmap']
 
 
 def validate_headers(headers):
@@ -34,7 +34,8 @@ def save_uploaded_video(files, upload_folder):
         abort(400, description="Video file not sent.")
 
     if video and supported_file(video.filename):
-        filename = secure_filename(video.filename)
+        _, ext = os.path.splitext(video.filename)
+        filename = str(uuid.uuid1()) + ext
         video_path = os.path.join(upload_folder, filename)
         video.save(video_path)
         return video_path

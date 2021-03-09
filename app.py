@@ -1,16 +1,24 @@
 import json
+import os
+
 from bson import json_util
 
 from pavi.lib.mongo import MongoLib
 from pavi.config.config import Config
 from pavi.util.process_video_utils import validate_headers, save_uploaded_video
-from pavi.util.services_utils import send_to_service, upload_to_db
+from pavi.util.service_utils import send_to_service, upload_to_db
+from pavi.routes.heatmap import heatmap
 
-from flask import Flask, request
+from flask import Flask, request, send_file
 
+# preprocessing
+UPLOAD_FOLDER = Config.get('upload_folder')
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = Config.get('upload_size_limit')
+app.register_blueprint(heatmap)
 
 db_client = MongoLib()
 collection = Config.get('db_collection')
@@ -25,10 +33,14 @@ def get_result(video_id):
 @app.route('/upload', methods=['POST'])
 def process_video():
     validate_headers(request.headers)
-    video_path = save_uploaded_video(request.files, Config.get('upload_folder'))
+    video_file = save_uploaded_video(request.files, UPLOAD_FOLDER)
 
-    results = send_to_service(request.headers.get('Algorithm'), video_path)
+    results = send_to_service(request.headers.get('Algorithm'), video_file)
     video_id = upload_to_db(results)
+
+    # cleanup video files
+    if os.path.exists(video_file):
+        os.remove(video_file)
 
     return {
         'id': video_id,
