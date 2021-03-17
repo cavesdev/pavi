@@ -7,6 +7,7 @@ from pavi.lib.mongo import MongoLib
 from pavi.config.config import Config
 from pavi.util.process_video_utils import validate_headers, save_uploaded_video
 from pavi.util.service_utils import send_to_service, upload_to_db
+from pavi.util.filter_utils import person_filter
 from pavi.routes.heatmap import heatmap
 
 from flask import Flask, request, send_file
@@ -27,6 +28,11 @@ collection = Config.get('db_collection')
 @app.route('/results/<video_id>', methods=['GET'])
 def get_result(video_id):
     result = db_client.get_by_field(collection, 'filename', video_id)
+
+    if results_filter := request.args.get('filter'):
+        if results_filter == 'person':
+            result = person_filter(result)
+
     return json.loads(json_util.dumps(result))
 
 
