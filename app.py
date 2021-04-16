@@ -10,7 +10,8 @@ from pavi.util.service_utils import send_to_service, upload_to_db
 from pavi.util.filter_utils import person_filter
 from pavi.routes.heatmap import heatmap
 
-from flask import Flask, request, send_file
+from flask import Flask, request
+from flask_cors import CORS
 
 # preprocessing
 UPLOAD_FOLDER = Config.get('upload_folder')
@@ -20,6 +21,7 @@ if not os.path.exists(UPLOAD_FOLDER):
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = Config.get('upload_size_limit')
 app.register_blueprint(heatmap)
+CORS(app)
 
 db_client = MongoLib()
 collection = Config.get('db_collection')

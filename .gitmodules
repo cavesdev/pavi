@@ -1,0 +1,6 @@
+[submodule "services/pavi-heatmap"]
+	path = services/pavi-heatmap
+	url = https://github.com/cavesdev/pavi-heatmap
+[submodule "services/pavi-yolo-v3"]
+	path = services/pavi-yolo-v3
+	url = https://github.com/cavesdev/pavi-yolo-v3
