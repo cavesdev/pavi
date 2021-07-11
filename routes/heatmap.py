@@ -1,8 +1,6 @@
 from flask import Blueprint, request, send_file
-from pavi.config.config import Config
-from pavi.util.process_video_utils import save_uploaded_video
-from pavi.util.service_utils import send_to_service
-from pavi.util.heatmap import request_heatmap
+from config import Config
+from util import save_uploaded_video, send_to_service, request_heatmap
 
 heatmap = Blueprint('simple_page', __name__,)
 

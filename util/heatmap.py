@@ -1,7 +1,7 @@
 import os
 
 import requests
-from pavi.config.services import Services
+from config import Services
 from flask import abort
 
 HEATMAP_FOLDER = os.path.join('static', 'heatmap')

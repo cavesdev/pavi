@@ -1,21 +1,15 @@
-# Plataforma de Análisis de Video UADY
-
-## Versión 0.1 ALPHA
+# PAVi
+## Plataforma de Análisis de Video
+## Versión: 0.1 Alpha
 
 ### Acerca del proyecto
-La plataforma de análisis de video (de aquí en adelante, PAVI) es una API que provee los siguientes servicios:
 
-- Procesar videos con diferentes algoritmos.*
+La plataforma de análisis de video (de aquí en adelante, PAVI) provee los siguientes servicios:
+
+- Procesar videos con diferentes algoritmos.
 - Mantener una base de datos con metadatos de los videos y sus resultados.
 - Obtener los resultados de los videos procesados anteriormente.
 
-*Algoritmos soportados actualmente: 
-- YOLOv3
-- Pedestrian Tracker.
 
-### Algunos pendientes:
-
-- Renombrar videos con UUID en main API.
-- Probar integración multiplataforma. 
-- Implementar sistema de autenticación para tenerlo en línea.
-- Experimentar con códecs de video, los cuales influyen en el tamaño de los archivos.
+Para procesar los videos se utiliza la herramienta OpenVINO de Intel.
+    

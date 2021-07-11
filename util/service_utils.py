@@ -4,9 +4,9 @@ Here are the helper functions necessary to send a video for processing to the sp
 import os
 import requests
 
-from pavi.config.services import Services
-from pavi.config.config import Config
-from pavi.lib.mongo import MongoLib
+from config import Services
+from config import Config
+from lib import MongoLib
 
 Services.load_from_file('services.json')
 
