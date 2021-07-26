@@ -1,12 +1,11 @@
 """
 Here are the helper functions necessary to send a video for processing to the specified service.
 """
-import os
 import requests
 
-from config import Services
-from config import Config
-from lib import MongoLib
+from pavi.config import Services
+from pavi.config import Config
+from pavi.lib import MongoLib
 
 Services.load_from_file('services.json')
 

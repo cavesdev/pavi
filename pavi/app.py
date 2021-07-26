@@ -1,9 +1,9 @@
 import json
 import os
 
-from config import Config  # import .env
-from lib import MongoLib
-from util import save_uploaded_video, send_to_service, upload_to_db, person_filter
+from pavi.config import Config  # import .env
+from pavi.lib import MongoLib
+from pavi.util import save_uploaded_video, person_filter
 
 from flask import Flask, request
 from flask_cors import CORS
@@ -35,14 +35,15 @@ def get_result(video_id):
 
 @app.route('/videos', methods=['POST'])
 def process_video():
-    video_file = save_uploaded_video(request.files, UPLOAD_FOLDER)
+    video_path = save_uploaded_video(request.files, UPLOAD_FOLDER)
 
-    results = send_to_service(request.headers.get('Algorithm'), video_file)
-    video_id = upload_to_db(results)
+    # send to openvino
+
+    # video_id = upload_to_db(results)
 
     # cleanup video files
-    if os.path.exists(video_file):
-        os.remove(video_file)
+    if os.path.exists(video_path):
+        os.remove(video_path)
 
     return {
         'id': video_id,

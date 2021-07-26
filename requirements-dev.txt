@@ -1,0 +1,7 @@
+Flask==1.1.2
+pymongo[tls,srv]==3.11.2
+python-dotenv==0.15.0
+Flask-Cors==3.0.10
+
+# OpenVINO development package
+openvino-dev[tensorflow2]==2021.4.0

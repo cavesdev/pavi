@@ -4,8 +4,6 @@ import uuid
 from flask import abort
 
 SUPPORTED_VIDEO_FORMATS = ['mp4']
-SUPPORTED_ALGORITHMS = ['yolov3', 'pedestrian-tracker', 'heatmap']
-
 
 def save_uploaded_video(files, upload_folder):
     if 'video' not in files:
@@ -27,5 +25,4 @@ def save_uploaded_video(files, upload_folder):
 
 
 def supported_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in SUPPORTED_VIDEO_FORMATS
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in SUPPORTED_VIDEO_FORMATS

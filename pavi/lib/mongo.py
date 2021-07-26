@@ -1,4 +1,4 @@
-from pavi.config.config import Config
+from pavi.config import Config
 from pymongo import MongoClient, DESCENDING
 from bson.objectid import ObjectId
 import urllib.parse
