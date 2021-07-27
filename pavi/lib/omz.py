@@ -16,3 +16,12 @@ def convert_model(model_name, model_path, convert_path):
         subprocess.check_output(['omz_converter', '--name', model_name, '-d', model_path, '-o', convert_path])
 
     return converted_path
+
+
+def download_and_convert_model(model_name, download_path, convert_path):
+
+    download_model(model_name, download_path)
+    converted_path = convert_model(model_name, download_path, convert_path)
+
+    return converted_path
+

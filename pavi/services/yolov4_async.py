@@ -6,21 +6,30 @@
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
 
-      http://www.apache.org/licenses/LICENSE-2.0
+      https://www.apache.org/licenses/LICENSE-2.0
 
  Unless required by applicable law or agreed to in writing, software
  distributed under the License is distributed on an "AS IS" BASIS,
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  See the License for the specific language governing permissions and
  limitations under the License.
+
+
+ Edited by: Carlos C.S (@cavesdev)
+ 27/07/21
+
+ Usage:
+    from pavi.services import yolov4_async
+
+    yolov4_async.main(input_video_path, **kwargs)
+
+ acceptable kwargs are defined in the build_argparser() function.
 """
 
 import logging
 import threading
 import os
 import sys
-import applicationMetricWriter
-from qarpo.demoutils import *
 from collections import deque
 from argparse import ArgumentParser, SUPPRESS
 from math import exp as exp
@@ -30,54 +39,58 @@ from enum import Enum
 import cv2
 import numpy as np
 from openvino.inference_engine import IECore
+from pavi.lib.omz import download_and_convert_model
+from pavi.config import Config
 
-#import monitors
 import ngraph as ng
 
 logging.basicConfig(format="[ %(levelname)s ] %(message)s", level=logging.INFO, stream=sys.stdout)
 log = logging.getLogger()
 
+MODEL_NAME = 'yolo-v4-tiny-tf'
+DOWNLOAD_PATH = os.path.join(Config.get('static_folder'), 'raw_models')
+CONVERT_PATH = os.path.join(Config.get('static_folder'), 'models')
+
+
 def build_argparser():
     parser = ArgumentParser(add_help=False)
     args = parser.add_argument_group('Options')
-    args.add_argument('-h', '--help', action='help', default=SUPPRESS, help='Show this help message and exit.')
-    args.add_argument("-m", "--model", help="Required. Path to an .xml file with a trained model.",
-                      required=True, type=str)
-    args.add_argument("-i", "--input", help="Required. Path to an image/video file. (Specify 'cam' to work with "
-                                            "camera)", required=True, type=str)
-    args.add_argument("-l", "--cpu_extension",
+    args.add_argument('-help', action='help', default=SUPPRESS, help='Show this help message and exit.')
+    args.add_argument("-model", help="Optional. Path to an .xml file with a trained model.", type=str)
+    args.add_argument("-input", help="Required. Path to an image/video file. (Specify 'cam' to work with "
+                                     "camera)", required=True, type=str)
+    args.add_argument("-cpu_extension",
                       help="Optional. Required for CPU custom layers. Absolute path to a shared library with "
                            "the kernels implementations.", type=str, default=None)
-    args.add_argument("-d", "--device",
-                      help="Optional. Specify the target device to infer on; CPU, GPU, HDDL or MYRIAD is"
+    args.add_argument("-device",
+                      help="Optional. Specify the target device to infer on; CPU, GPU, FPGA, HDDL or MYRIAD is"
                            " acceptable. The sample will look for a suitable plugin for device specified. "
                            "Default value is CPU", default="CPU", type=str)
-    args.add_argument("--labels", help="Optional. Labels mapping file", default=None, type=str)
-    args.add_argument("-t", "--prob_threshold", help="Optional. Probability threshold for detections filtering",
+    args.add_argument('-precision', help='Optional. Specify the model\'s precision to use: FP16, FP32, INT8'
+                                         '(not every option may be available for every model). Default is FP32',
+                      default='FP32', type=str)
+    args.add_argument("-labels", help="Optional. Labels mapping file", default=None, type=str)
+    args.add_argument("-prob_threshold", help="Optional. Probability threshold for detections filtering",
                       default=0.5, type=float)
-    args.add_argument("-iout", "--iou_threshold", help="Optional. Intersection over union threshold for overlapping "
-                                                       "detections filtering", default=0.4, type=float)
-    args.add_argument("-r", "--raw_output_message", help="Optional. Output inference results raw values showing",
+    args.add_argument("-iou_threshold", help="Optional. Intersection over union threshold for overlapping "
+                                             "detections filtering", default=0.4, type=float)
+    args.add_argument("-raw_output_message", help="Optional. Output inference results raw values showing",
                       default=False, action="store_true")
-    args.add_argument("-nireq", "--num_infer_requests", help="Optional. Number of infer requests",
+    args.add_argument("-num_infer_requests", help="Optional. Number of infer requests",
                       default=1, type=int)
-    args.add_argument("-nstreams", "--num_streams",
+    args.add_argument("-num_streams",
                       help="Optional. Number of streams to use for inference on the CPU or/and GPU in throughput mode "
                            "(for HETERO and MULTI device cases use format <device1>:<nstreams1>,<device2>:<nstreams2> "
                            "or just <nstreams>)",
                       default="", type=str)
-    args.add_argument("-nthreads", "--number_threads",
+    args.add_argument("-number_threads",
                       help="Optional. Number of threads to use for inference on CPU (including HETERO cases)",
                       default=None, type=int)
-    args.add_argument("-loop_input", "--loop_input", help="Optional. Iterate over input infinitely",
+    args.add_argument("-loop_input", help="Optional. Iterate over input infinitely",
                       action='store_true')
-    args.add_argument("-no_show", "--no_show", help="Optional. Don't show output", action='store_true')
-    args.add_argument('-u', '--utilization_monitors', default='', type=str,
-                      help='Optional. List of monitors to show initially.')
-    args.add_argument("--keep_aspect_ratio", action="store_true", default=False,
-                      help='Optional. Keeps aspect ratio on resize.'),
-    args.add_argument("--output", "-o", default=os.getcwd()+"/results/", help="Path to store inference results", type=str)
-    
+    args.add_argument("-no_show", help="Optional. Don't show output", action='store_true')
+    args.add_argument("-keep_aspect_ratio", action="store_true", default=False,
+                      help='Optional. Keeps aspect ratio on resize.')
     return parser
 
 
@@ -89,19 +102,14 @@ class YoloParams:
         self.coords = 4 if 'coords' not in param else int(param['coords'])
         self.classes = 80 if 'classes' not in param else int(param['classes'])
         self.side = side
-        '''self.anchors = [10.0, 13.0, 16.0, 30.0, 33.0, 23.0, 30.0, 61.0, 62.0, 45.0, 59.0, 119.0, 116.0, 90.0, 156.0,
+        self.anchors = [10.0, 13.0, 16.0, 30.0, 33.0, 23.0, 30.0, 61.0, 62.0, 45.0, 59.0, 119.0, 116.0, 90.0, 156.0,
                         198.0,
-                        373.0, 326.0] if 'anchors' not in param else [float(a) for a in param['anchors'].split(',')]'''
-        #if 'anchors' not in param else [float(a) for a in param['anchors'].split(',')]
-        self.anchors = param.get('anchors',
-                                     [10.0, 13.0, 16.0, 30.0, 33.0, 23.0,
-                                      30.0, 61.0, 62.0, 45.0, 59.0, 119.0,
-                                      116.0, 90.0, 156.0, 198.0, 373.0, 326.0])
+                        373.0, 326.0] if 'anchors' not in param else param['anchors']
+
         self.isYoloV3 = False
 
         if param.get('mask'):
-            #mask = [int(idx) for idx in param['mask'].split(',')]
-            mask = param.get('mask', None)
+            mask = param['mask']
             self.num = len(mask)
 
             maskedAnchors = []
@@ -109,7 +117,7 @@ class YoloParams:
                 maskedAnchors += [self.anchors[idx * 2], self.anchors[idx * 2 + 1]]
             self.anchors = maskedAnchors
 
-            self.isYoloV3 = True # Weak way to determine but the only one.
+            self.isYoloV3 = True  # Weak way to determine but the only one.
 
 
 class Modes(Enum):
@@ -117,7 +125,7 @@ class Modes(Enum):
     MIN_LATENCY = 1
 
 
-class Mode():
+class Mode:
     def __init__(self, value):
         self.current = value
 
@@ -128,7 +136,7 @@ class Mode():
             self.current = Modes(0)
 
 
-class ModeInfo():
+class ModeInfo:
     def __init__(self):
         self.last_start_time = perf_counter()
         self.last_end_time = None
@@ -138,8 +146,8 @@ class ModeInfo():
 
 def scale_bbox(x, y, height, width, class_id, confidence, im_h, im_w, is_proportional):
     if is_proportional:
-        scale = np.array([min(im_w/im_h, 1), min(im_h/im_w, 1)])
-        offset = 0.5*(np.ones(2) - scale)
+        scale = np.array([min(im_w / im_h, 1), min(im_h / im_w, 1)])
+        offset = 0.5 * (np.ones(2) - scale)
         x, y = (np.array([x, y]) - offset) / scale
         width, height = np.array([width, height]) / scale
     xmin = int((x - width / 2) * im_w)
@@ -165,16 +173,16 @@ def parse_yolo_region(predictions, resized_image_shape, original_im_shape, param
     size_normalizer = (resized_image_w, resized_image_h) if params.isYoloV3 else (params.side, params.side)
     bbox_size = params.coords + 1 + params.classes
     # ------------------------------------------- Parsing YOLO Region output -------------------------------------------
-    for row, col, n in np.ndindex(params.side[0], params.side[1], params.num):
+    for row, col, n in np.ndindex(params.side, params.side, params.num):
         # Getting raw values for each detection bounding box
-        bbox = predictions[0, n*bbox_size:(n+1)*bbox_size, row, col]
+        bbox = predictions[0, n * bbox_size:(n + 1) * bbox_size, row, col]
         x, y, width, height, object_probability = bbox[:5]
         class_probabilities = bbox[5:]
         if object_probability < threshold:
             continue
         # Process raw value
-        x = (col + x) / params.side[1]
-        y = (row + y) / params.side[0]
+        x = (col + x) / params.side
+        y = (row + y) / params.side
         # Value for exp is very big number in some cases so following construction is using here
         try:
             width = exp(width)
@@ -186,7 +194,7 @@ def parse_yolo_region(predictions, resized_image_shape, original_im_shape, param
         height = height * params.anchors[2 * n + 1] / size_normalizer[1]
 
         class_id = np.argmax(class_probabilities)
-        confidence = class_probabilities[class_id]*object_probability
+        confidence = class_probabilities[class_id] * object_probability
         if confidence < threshold:
             continue
         objects.append(scale_bbox(x=x, y=y, height=height, width=width, class_id=class_id, confidence=confidence,
@@ -215,14 +223,14 @@ def resize(image, size, keep_aspect_ratio, interpolation=cv2.INTER_LINEAR):
 
     iw, ih = image.shape[0:2][::-1]
     w, h = size
-    scale = min(w/iw, h/ih)
-    nw = int(iw*scale)
-    nh = int(ih*scale)
+    scale = min(w / iw, h / ih)
+    nw = int(iw * scale)
+    nh = int(ih * scale)
     image = cv2.resize(image, (nw, nh), interpolation=interpolation)
     new_image = np.full((size[1], size[0], 3), 128, dtype=np.uint8)
-    dx = (w-nw)//2
-    dy = (h-nh)//2
-    new_image[dy:dy+nh, dx:dx+nw, :] = image
+    dx = (w - nw) // 2
+    dy = (h - nh) // 2
+    new_image[dy:dy + nh, dx:dx + nw, :] = image
     return new_image
 
 
@@ -234,36 +242,24 @@ def preprocess_frame(frame, input_height, input_width, nchw_shape, keep_aspect_r
     return in_frame
 
 
-#new---
-def get_parent(node):
-    return node.inputs()[0].get_source_output().get_node()
-    
-def get_output_info(net):
-        ng_func = ng.function_from_cnn(net)
-        output_info = {}
-        for node in ng_func.get_ordered_ops():
-            layer_name = node.get_friendly_name()
-            if layer_name not in net.outputs:
-                continue
-            shape = list(get_parent(node).shape)
-            yolo_params = YoloParams(node._get_attributes(), shape[2:4])
-            output_info[layer_name] = (shape, yolo_params)
-        return output_info
-       
 def get_objects(output, net, new_frame_height_width, source_height_width, prob_threshold, is_proportional):
     objects = list()
-    yolo_layer_params = get_output_info(net)
+    function = ng.function_from_cnn(net)
     for layer_name, out_blob in output.items():
-            layer_params = yolo_layer_params[layer_name]
-            out_blob = out_blob.buffer.reshape(layer_params[0])
-            objects += parse_yolo_region(out_blob, new_frame_height_width, source_height_width, layer_params[1], prob_threshold, is_proportional)
+        # out_blob = out_blob.buffer.reshape(net.layers[net.layers[layer_name].parents[0]].out_data[0].shape)
+        # layer_params = YoloParams(net.layers[layer_name].params, out_blob.shape[2])
+        out_blob = out_blob.buffer.reshape(net.outputs[layer_name].shape)
+        params = [x._get_attributes() for x in function.get_ordered_ops() if x.get_friendly_name() == layer_name][0]
+        layer_params = YoloParams(params, out_blob.shape[2])
+        objects += parse_yolo_region(out_blob, new_frame_height_width, source_height_width, layer_params,
+                                     prob_threshold, is_proportional)
 
     return objects
 
-#------------------------------------------------------------------------------------------------------------------------
+
 def filter_objects(objects, iou_threshold, prob_threshold):
     # Filtering overlapping boxes with respect to the --iou_threshold CLI parameter
-    objects = sorted(objects, key=lambda obj : obj['confidence'], reverse=True)
+    objects = sorted(objects, key=lambda obj: obj['confidence'], reverse=True)
     for i in range(len(objects)):
         if objects[i]['confidence'] == 0:
             continue
@@ -293,7 +289,7 @@ def async_callback(status, callback_args):
 
 
 def put_highlighted_text(frame, message, position, font_face, font_scale, color, thickness):
-    cv2.putText(frame, message, position, font_face, font_scale, (255, 255, 255), thickness + 1) # white border
+    cv2.putText(frame, message, position, font_face, font_scale, (255, 255, 255), thickness + 1)  # white border
     cv2.putText(frame, message, position, font_face, font_scale, color, thickness)
 
 
@@ -302,8 +298,25 @@ def await_requests_completion(requests):
         request.wait()
 
 
-def main():
-    args = build_argparser().parse_args()
+def main(input_video_path, **kwargs):
+    if not input_video_path:
+        raise RuntimeError('Video file not provided.')
+
+    # prepare kwargs for parsing
+    argv = []
+    for key in kwargs:
+        argv.append(f'-{key}={kwargs[key]}')
+    argv.insert(0, f'-input={input_video_path}')
+
+    args = build_argparser().parse_args(argv)
+
+    # ---------------------------- Download and convert model to IR -----------------------------------------------
+
+    if not args.model:
+        log.info('Downloading and converting model...')
+        converted_path = download_and_convert_model(MODEL_NAME, DOWNLOAD_PATH, CONVERT_PATH)
+        model_xml = os.path.join(converted_path, args.precision, MODEL_NAME + '.xml')
+        args.model = model_xml
 
     # ------------- 1. Plugin initialization for specified device and load extensions library if specified -------------
     log.info("Creating Inference Engine...")
@@ -315,73 +328,33 @@ def main():
     devices_nstreams = {}
     if args.num_streams:
         devices_nstreams = {device: args.num_streams for device in ['CPU', 'GPU'] if device in args.device} \
-                           if args.num_streams.isdigit() \
-                           else dict([device.split(':') for device in args.num_streams.split(',')])
-    
-    
-        print("this is device",args.device)
+            if args.num_streams.isdigit() \
+            else dict([device.split(':') for device in args.num_streams.split(',')])
+
+    if 'CPU' in args.device:
         if args.cpu_extension:
             ie.add_extension(args.cpu_extension, 'CPU')
         if args.number_threads is not None:
             config_user_specified['CPU_THREADS_NUM'] = str(args.number_threads)
         if 'CPU' in devices_nstreams:
             config_user_specified['CPU_THROUGHPUT_STREAMS'] = devices_nstreams['CPU'] \
-                                                              if int(devices_nstreams['CPU']) > 0 \
-                                                              else 'CPU_THROUGHPUT_AUTO'
-        print("this is the user config", config_user_specified)
-        #key not identified even tried to prepend KEY_ per documentation
-        #config_min_latency['CPU_THROUGHPUT_STREAMS'] = '1'
+                if int(devices_nstreams['CPU']) > 0 \
+                else 'CPU_THROUGHPUT_AUTO'
+
+        config_min_latency['CPU_THROUGHPUT_STREAMS'] = '1'
 
     if 'GPU' in args.device:
         if 'GPU' in devices_nstreams:
             config_user_specified['GPU_THROUGHPUT_STREAMS'] = devices_nstreams['GPU'] \
-                                                              if int(devices_nstreams['GPU']) > 0 \
-                                                              else 'GPU_THROUGHPUT_AUTO'
+                if int(devices_nstreams['GPU']) > 0 \
+                else 'GPU_THROUGHPUT_AUTO'
 
         config_min_latency['GPU_THROUGHPUT_STREAMS'] = '1'
-        
-        
-    #set output path to store results logic
-    output_path = args.output
-    print("This is output path: ", output_path)
 
-    if not os.path.exists(output_path):
-        try:
-            os.makedirs(output_path)
-        except OSError:
-            print(" Failed to Create Directory %s" % output_path)
-        else:
-            print("Output directory %s was successfully created" % output_path)
-    #handling of output results and progress bar inference file  
-    job_id = str(os.environ['PBS_JOBID']).split('.')[0]
-    output_file = "output_" + job_id +".mp4"
-    output_path_file = output_path + output_file
-    #send model and device for telemetry
-    #applicationMetricWriter.send_application_metrics(args.model, args.device)
-    #used to track application's progress
-    inference_file = output_path + "i_progress_" + job_id + ".txt"
     # -------------------- 2. Reading the IR generated by the Model Optimizer (.xml and .bin files) --------------------
     log.info("Loading network")
     net = ie.read_network(args.model, os.path.splitext(args.model)[0] + ".bin")
-
     # ---------------------------------- 3. Load CPU extension for support specific layer ------------------------------
-
-    #Ensure Model's layer's are supported by MKLDNN
-    if "CPU" in args.device:
-        supported_layers = ie.query_network(net, "CPU")
-        ng_function = ng.function_from_cnn(net)
-        not_supported_layers = \
-                [node.get_friendly_name() for node in ng_function.get_ordered_ops() \
-                if node.get_friendly_name() not in supported_layers]
-
-        if len(not_supported_layers) != 0:
-            log.error("Following layers are not supported by the plugin for specified device {}:\n {}".
-                      format(args.device, ', '.join(not_supported_layers)))
-            log.error("Please try to specify cpu extensions library path in sample's command line parameters using -l "
-                      "or --cpu_extension command line argument")
-            sys.exit(1)
-
-    assert len(net.input_info) == 1, "Sample supports only YOLO V3 based single input topologies"
 
     # ---------------------------------------------- 4. Preparing inputs -----------------------------------------------
     log.info("Preparing inputs")
@@ -409,26 +382,21 @@ def main():
 
     # ----------------------------------------- 5. Loading model to the plugin -----------------------------------------
     log.info("Loading model to the plugin")
-    exec_nets = {}
-    print("This is the device ", args.device)
-    exec_nets[Modes.USER_SPECIFIED] = ie.load_network(network=net, device_name=args.device,
-                                                      config=config_user_specified,
-                                                      num_requests=args.num_infer_requests)
-    
+    exec_nets = {Modes.USER_SPECIFIED: ie.load_network(network=net, device_name=args.device,
+                                                       config=config_user_specified,
+                                                       num_requests=args.num_infer_requests),
+                 Modes.MIN_LATENCY: ie.load_network(network=net, device_name=args.device.split(":")[-1].split(",")[0],
+                                                    config=config_min_latency,
+                                                    num_requests=1)}
+
     empty_requests = deque(exec_nets[mode.current].requests)
     completed_request_results = {}
     next_frame_id = 0
     next_frame_id_to_show = 0
-    mode_info = { mode.current: ModeInfo() }
+    mode_info = {mode.current: ModeInfo()}
     event = threading.Event()
     callback_exceptions = []
-    
-    fps = cap.get(cv2.CAP_PROP_FPS)
-    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    fourcc = cv2.VideoWriter_fourcc(*'avc1')
-    video_length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    output_video = cv2.VideoWriter(output_path_file,fourcc, fps, (width,height))
+
     # ----------------------------------------------- 6. Doing inference -----------------------------------------------
     log.info("Starting inference...")
     print("To close the application, press 'CTRL+C' here or switch to the output window and press ESC key")
@@ -437,17 +405,14 @@ def main():
     while (cap.isOpened()
            or completed_request_results
            or len(empty_requests) < len(exec_nets[mode.current].requests)) \
-           and not callback_exceptions:
+            and not callback_exceptions:
         if next_frame_id_to_show in completed_request_results:
             frame, output, start_time, is_same_mode = completed_request_results.pop(next_frame_id_to_show)
 
             next_frame_id_to_show += 1
-            duration2 = perf_counter() - mode_info[mode.current].last_start_time
-            applicationMetricWriter.send_inference_time(duration2)
-
             if is_same_mode:
                 mode_info[mode.current].frames_count += 1
-                    
+
             objects = get_objects(output, net, (input_height, input_width), frame.shape[:-1], args.prob_threshold,
                                   args.keep_aspect_ratio)
             objects = filter_objects(objects, args.iou_threshold, args.prob_threshold)
@@ -456,7 +421,6 @@ def main():
                 log.info(" Class ID | Confidence | XMIN | YMIN | XMAX | YMAX | COLOR ")
 
             origin_im_size = frame.shape[:-1]
-            #presenter.drawGraphs(frame)
             for obj in objects:
                 # Validation bbox of detected object
                 obj['xmax'] = min(obj['xmax'], origin_im_size[1])
@@ -483,29 +447,26 @@ def main():
 
             # Draw performance stats over frame
             if mode_info[mode.current].frames_count != 0:
-          
-                fps_message = "FPS: {:.1f}".format(mode_info[mode.current].frames_count / \
+                fps_message = "FPS: {:.1f}".format(mode_info[mode.current].frames_count /
                                                    (perf_counter() - mode_info[mode.current].last_start_time))
                 mode_info[mode.current].latency_sum += perf_counter() - start_time
-                latency_message = "Latency: {:.1f} ms".format((mode_info[mode.current].latency_sum / \
-                                                              mode_info[mode.current].frames_count) * 1e3)
-                
+                latency_message = "Latency: {:.1f} ms".format((mode_info[mode.current].latency_sum /
+                                                               mode_info[mode.current].frames_count) * 1e3)
+
                 put_highlighted_text(frame, fps_message, (15, 20), cv2.FONT_HERSHEY_COMPLEX, 0.75, (200, 10, 10), 2)
                 put_highlighted_text(frame, latency_message, (15, 50), cv2.FONT_HERSHEY_COMPLEX, 0.75, (200, 10, 10), 2)
 
             mode_message = "{} mode".format(mode.current.name)
             put_highlighted_text(frame, mode_message, (10, int(origin_im_size[0] - 20)),
                                  cv2.FONT_HERSHEY_COMPLEX, 0.75, (10, 10, 200), 2)
-            
-            if (mode_info[mode.current].frames_count%10 == 0 or mode_info[mode.current].frames_count == video_length) and mode_info[mode.current].frames_count != 0:
-                    progressUpdate(inference_file, (time.time()-start), mode_info[mode.current].frames_count, video_length)
+
             if not args.no_show:
                 cv2.imshow("Detection Results", frame)
                 key = cv2.waitKey(wait_key_time)
 
-                if key in {ord("q"), ord("Q"), 27}: # ESC key
+                if key in {ord("q"), ord("Q"), 27}:  # ESC key
                     break
-                if key == 9: # Tab key
+                if key == 9:  # Tab key
                     prev_mode = mode.current
                     mode.next()
 
@@ -515,10 +476,6 @@ def main():
 
                     mode_info[prev_mode].last_end_time = perf_counter()
                     mode_info[mode.current] = ModeInfo()
-                #else:
-                    #presenter.handleKey(key)
-            else:
-                output_video.write(frame)
 
         elif empty_requests and cap.isOpened():
             start_time = perf_counter()
@@ -534,7 +491,7 @@ def main():
 
             # resize input_frame to network size
             in_frame = preprocess_frame(frame, input_height, input_width, nchw_shape, args.keep_aspect_ratio)
-            
+
             # Start inference
             request.set_completion_callback(py_callback=async_callback,
                                             py_data=(request,
@@ -562,21 +519,15 @@ def main():
 
         end_time = mode_info[mode_value].last_end_time if mode_value in mode_info \
                                                           and mode_info[mode_value].last_end_time is not None \
-                                                       else perf_counter()
-        log.info("FPS: {:.1f}".format(mode_info[mode_value].frames_count / \
+            else perf_counter()
+        log.info("FPS: {:.1f}".format(mode_info[mode_value].frames_count /
                                       (end_time - mode_info[mode_value].last_start_time)))
-        log.info("Latency: {:.1f} ms".format((mode_info[mode_value].latency_sum / \
-                                             mode_info[mode_value].frames_count) * 1e3))
-        #telemetry metrics
-        duration = end_time - mode_info[mode_value].last_start_time
-        applicationMetricWriter.send_inference_time(duration)
-        #performance chart metrics
-        with open(os.path.join(output_path, f'stats_{job_id}.txt'), 'w') as f:
-                f.write('{:.3g} \n'.format(end_time - mode_info[mode_value].last_start_time))
-                f.write('{} \n'.format(mode_info[mode_value].frames_count))
-    #print(presenter.reportMeans())
+        log.info("Latency: {:.1f} ms".format((mode_info[mode_value].latency_sum /
+                                              mode_info[mode_value].frames_count) * 1e3))
 
     for exec_net in exec_nets.values():
         await_requests_completion(exec_net.requests)
-    #send model and device for telemetry
-    applicationMetricWriter.send_application_metrics(args.model, args.device)
+
+
+if __name__ == '__main__':
+    sys.exit(main(None) or 0)
