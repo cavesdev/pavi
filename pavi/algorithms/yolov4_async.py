@@ -15,13 +15,14 @@
  limitations under the License.
 
 
+ Taken from OpenVINO 2021.3 demos.
  Edited by: Carlos C.S (@cavesdev)
  27/07/21
 
  Usage:
     from pavi.services import yolov4_async
 
-    yolov4_async.main(input_video_path, **kwargs)
+    yolov4_async.main(input_video_path, model_xml, **kwargs)
 
  acceptable kwargs are defined in the build_argparser() function.
 """
@@ -39,24 +40,18 @@ from enum import Enum
 import cv2
 import numpy as np
 from openvino.inference_engine import IECore
-from pavi.lib.omz import download_and_convert_model
-from pavi.config import Config
 
 import ngraph as ng
 
 logging.basicConfig(format="[ %(levelname)s ] %(message)s", level=logging.INFO, stream=sys.stdout)
 log = logging.getLogger()
 
-MODEL_NAME = 'yolo-v4-tiny-tf'
-DOWNLOAD_PATH = os.path.join(Config.get('static_folder'), 'raw_models')
-CONVERT_PATH = os.path.join(Config.get('static_folder'), 'models')
-
 
 def build_argparser():
     parser = ArgumentParser(add_help=False)
     args = parser.add_argument_group('Options')
     args.add_argument('-help', action='help', default=SUPPRESS, help='Show this help message and exit.')
-    args.add_argument("-model", help="Optional. Path to an .xml file with a trained model.", type=str)
+    args.add_argument("-model", help="Required. Path to an .xml file with a trained model.", required=True, type=str)
     args.add_argument("-input", help="Required. Path to an image/video file. (Specify 'cam' to work with "
                                      "camera)", required=True, type=str)
     args.add_argument("-cpu_extension",
@@ -88,7 +83,7 @@ def build_argparser():
                       default=None, type=int)
     args.add_argument("-loop_input", help="Optional. Iterate over input infinitely",
                       action='store_true')
-    args.add_argument("-no_show", help="Optional. Don't show output", action='store_true')
+    args.add_argument("-no_show", help="Optional. Don't show output", default=False, type=bool)
     args.add_argument("-keep_aspect_ratio", action="store_true", default=False,
                       help='Optional. Keeps aspect ratio on resize.')
     return parser
@@ -298,7 +293,7 @@ def await_requests_completion(requests):
         request.wait()
 
 
-def main(input_video_path, **kwargs):
+def main(input_video_path, model_xml, **kwargs):
     if not input_video_path:
         raise RuntimeError('Video file not provided.')
 
@@ -307,16 +302,9 @@ def main(input_video_path, **kwargs):
     for key in kwargs:
         argv.append(f'-{key}={kwargs[key]}')
     argv.insert(0, f'-input={input_video_path}')
+    argv.insert(1, f'-model={model_xml}')
 
     args = build_argparser().parse_args(argv)
-
-    # ---------------------------- Download and convert model to IR -----------------------------------------------
-
-    if not args.model:
-        log.info('Downloading and converting model...')
-        converted_path = download_and_convert_model(MODEL_NAME, DOWNLOAD_PATH, CONVERT_PATH)
-        model_xml = os.path.join(converted_path, args.precision, MODEL_NAME + '.xml')
-        args.model = model_xml
 
     # ------------- 1. Plugin initialization for specified device and load extensions library if specified -------------
     log.info("Creating Inference Engine...")

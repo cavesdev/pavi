@@ -3,9 +3,10 @@ import os
 
 from pavi.config import Config  # import .env
 from pavi.lib import MongoLib
-from pavi.util import save_uploaded_video, person_filter
+from pavi.util import save_uploaded_video
+from pavi.util.service_utils import send_to_service
 
-from flask import Flask, request
+from flask import Flask, request, abort
 from flask_cors import CORS
 from bson import json_util
 
@@ -35,9 +36,12 @@ def get_result(video_id):
 
 @app.route('/videos', methods=['POST'])
 def process_video():
-    video_path = save_uploaded_video(request.files, UPLOAD_FOLDER)
-
-    # send to openvino
+    try:
+        algorithm = request.form.get('algorithm')
+        video_path = save_uploaded_video(request.files, UPLOAD_FOLDER)
+        send_to_service(algorithm, video_path)
+    except RuntimeError as e:
+        abort(400, description=str(e))
 
     # video_id = upload_to_db(results)
 
@@ -46,7 +50,7 @@ def process_video():
         os.remove(video_path)
 
     return {
-        'id': video_id,
+        'id': 1,
         'message': 'Video uploaded.'
     }
 

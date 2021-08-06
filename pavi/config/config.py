@@ -4,8 +4,6 @@ Shared between various modules inside the program.
 """
 
 import os
-from dotenv import load_dotenv
-load_dotenv()
 
 
 class Config:
@@ -17,8 +15,10 @@ class Config:
         'db_host': os.getenv('DB_HOST'),
         'db_name': os.getenv('DB_NAME'),
         'db_collection': os.getenv('DB_COLLECTION'),
-        'static_folder': os.path.abspath(os.path.join(os.getcwd(), 'static')),
-        'upload_folder': os.getenv('UPLOAD_FOLDER') or os.path.abspath(os.path.join(os.getcwd(), 'static', 'videos')),
+        'project_path': os.getenv('PROJECT_PATH'),
+        'project_module_path': os.getenv('PROJECT_MODULE_PATH'),
+        'static_folder': os.path.join(os.getenv('PROJECT_PATH'), 'static'),
+        'upload_folder': os.getenv('UPLOAD_FOLDER') or os.path.join(os.getenv('PROJECT_PATH'), 'static', 'videos'),
         'upload_size_limit': os.getenv('UPLOAD_SIZE_LIMIT') or 100 * 1024 * 1024  # 100MB
     }
 

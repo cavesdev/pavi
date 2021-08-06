@@ -1,21 +1,20 @@
 """
 Here are the helper functions necessary to send a video for processing to the specified service.
 """
-import requests
+import os
+import subprocess
+import sys
 
-from pavi.config import Services
 from pavi.config import Config
 from pavi.lib import MongoLib
 
-Services.load_from_file('services.json')
 
+def send_to_service(algorithm, video_path):
+    algorithm_script = os.path.abspath(os.path.join(Config.get('project_module_path'), 'services', algorithm + '.py'))
+    if not os.path.exists(algorithm_script):
+        raise RuntimeError("No algorithm found.");
 
-def send_to_service(algorithm, video):
-    print(f'Enviando el video para procesar con: {algorithm}')
-    url = Services.get(algorithm) + '/process'
-    files = {'video': open(video, 'rb')}
-    res = requests.post(url, files=files)
-    return res.json()
+    subprocess.check_output([sys.executable, algorithm_script, video_path], env=os.environ.copy())
 
 
 def upload_to_db(results):
